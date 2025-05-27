@@ -3,8 +3,8 @@ import {
   verificarDNI,
   agregarPaciente,
   listarPacientes,
-  listar // Asegúrate de que esta función esté exportada si se usa
-} from "../controllers/pacientes.controller.js";
+  listar
+} from "../controllers/pacientes.controllers.js";
 
 const router = express.Router();
 

@@ -1,4 +1,6 @@
-const express = require("express");
+import express from 'express';
+import {conexion} from '../config/db.js'; 
+
 const router = express.Router();
 
 // Vista principal de médicos
@@ -23,8 +25,8 @@ router.get("/medicos-json", async (req, res) => {
 });
 
 // Vista para editar médico
-router.get('/medicos/editar/:dni', (req, res) => {
-  res.render('medicos/editar-medico');
+router.get("/medicos/editar/:dni", (req, res) => {
+  res.render("medicos/editar-medico");
 });
 
-module.exports = router;
+export default router;
