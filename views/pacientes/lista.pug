@@ -1,0 +1,7 @@
+extends ../layout
+
+block content
+  h2 Lista de pacientes
+  ul
+    each paciente in pacientes
+      li #{paciente.nombre} - #{paciente.dni}
