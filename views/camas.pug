@@ -1,0 +1,236 @@
+extends layout
+
+block content
+  head
+    title Gestión de Camas
+    link(rel="stylesheet", href="/css/style.css")
+    style.
+      .contenedor {
+        display: flex;
+        flex-wrap: wrap;
+        width: 80%;
+      }
+      .camas {
+        display: flex;
+        flex-wrap: wrap;
+        min-height: 100vh;
+      }
+      .menu {
+        width: 20%;
+        background: #003366;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+      .alas {
+        width: 33.33%;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+      .menu button {
+        width: 100%;
+        margin: 10px 0;
+        padding: 10px;
+        border: none;
+        border-radius: 10px;
+        font-weight: bold;
+        color: #fff;
+        background: #1a6ebc;
+        cursor: pointer;
+        transition: .3s;
+      }
+      .menu button:hover {
+        background: #1652a0;
+      }
+      .alas h1 {
+        background: #003366;
+        color: #fff;
+        text-align: center;
+        border-radius: 8px;
+        padding: 10px;
+        margin-bottom: 20px;
+        font-size: 22px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, .1);
+      }
+      .habitaciones {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+        padding: 15px;
+        margin-bottom: 20px;
+      }
+      .habitaciones h2 {
+        text-align: center;
+        margin-bottom: 15px;
+        color: #1c2e44;
+        font-size: 18px;
+        border-bottom: 1px solid #dfe6ee;
+        padding-bottom: 5px;
+      }
+      .cam-container {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      .cam {
+        width: 80px;
+        background: #ecf0f1;
+        border-radius: 10px;
+        text-align: center;
+        padding: 10px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, .1);
+        transition: .3s transform, .3s background;
+      }
+      .cam:hover {
+        transform: scale(1.07);
+        background: #d0e6e2;
+      }
+      .cam h2 {
+        margin: 0;
+        font-size: 16px;
+        color: #34495e;
+      }
+      .cam img {
+        width: 100%;
+        margin-top: 5px;
+      }
+      .emergencias {
+        width: 100%;
+        padding: 30px 20px 50px;
+      }
+      .emergencias h1 {
+        background: #c0392b;
+        color: #fff;
+        text-align: center;
+        padding: 15px;
+        border-radius: 15px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, .2);
+        font-size: 26px;
+        letter-spacing: 2px;
+        margin-bottom: 30px;
+      }
+      .emergencias .cam {
+        width: 100px;
+        background: #f9d6d5;
+      }
+      @media(max-width: 768px) {
+        .camas { flex-direction: column; }
+        .menu, .alas { width: 100%; }
+        .menu { order: -1; }
+      }
+      .cam.libre { background: #d5f5e3; }
+      .cam.ocupada { background: #f5b7b1; }
+      .cam.higienizando { background: #fcf3cf; }
+      .cam.seleccionada {
+        border: 2px solid blue;
+        transform: scale(1.1);
+      }
+      .asignar-paciente {
+        text-align: center;
+      }
+
+  header
+    img(src="/img/logo.png", alt="Logo del Hospital")
+    h1 Gestión de Camas
+
+  .camas
+    .menu
+      button(name="todos") Todas las camas
+      button(name="libres") Camas Libres
+      button(name="ocupadas") Camas Ocupadas
+      button(name="higienizando") Camas Higienizando
+      br
+      br
+      .asignar-paciente
+        select#selectPaciente
+          option(value="") Seleccione un paciente
+        button#btnAsignarPaciente Asignar
+
+    .contenedor
+      each ala in [1,2,3]
+        .alas
+          h1 Ala #{ala}
+          each hab, i in ['A', 'B', 'C']
+            .habitaciones
+              h2 Habitación #{hab}
+              .cam-container
+                each c in [1,2]
+                  .cam(data-id=`${ala}-${hab}-${c}`)
+                    h2 #{c}
+                    img(src="/img/cama.png", alt="Cama")
+
+    section.emergencias
+      h1 Camas de Emergencia
+      .cam-container(style="justify-content:center;gap:24px;")
+        each e in ['E-1', 'E-2', 'E-3']
+          .cam(data-id=`${ala}-${hab}-${c}`)
+            h2 #{e}
+            img(src="/img/cama.png", alt="Cama emergencia")
+
+  script(src="https://code.jquery.com/jquery-3.6.0.min.js")
+  script.
+    let camaSeleccionadaId = null;
+
+    function cargarPacientes() {
+      fetch('/pacientes-disponibles')
+        .then(response => {
+          if (!response.ok) throw new Error('Error al obtener pacientes');
+          return response.json();
+        })
+        .then(pacientes => {
+          const select = $('#selectPaciente');
+          select.empty().append('<option value="">Seleccione un paciente</option>');
+          pacientes.forEach(p => {
+            select.append(`<option value="${p.id}">${p.nombre}</option>`);
+          });
+        })
+        .catch(error => {
+          console.error('Error al cargar pacientes:', error);
+          alert('No se pudo cargar la lista de pacientes.');
+        });
+    }
+
+    $(document).ready(function () {
+      $('.asignar-paciente').hide();
+
+      $('.cam').on('click', function () {
+        $('.cam').removeClass('seleccionada');
+        $(this).addClass('seleccionada');
+        camaSeleccionadaId = $(this).data('id');
+        if (!camaSeleccionadaId) {
+          alert('Esta cama no tiene ID asignado (data-id).');
+          return;
+        }
+        cargarPacientes();
+        $('.asignar-paciente').show();
+      });
+
+      $('#btnAsignarPaciente').on('click', function () {
+        const pacienteId = $('#selectPaciente').val();
+        if (!camaSeleccionadaId || !pacienteId) {
+          alert('Seleccione una cama y un paciente');
+          return;
+        }
+
+        fetch('/asignar-paciente', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            camaId: camaSeleccionadaId,
+            pacienteId: pacienteId
+          })
+        })
+        .then(response => {
+          if (response.ok) {
+            alert('Paciente asignado con éxito');
+            location.reload();
+          } else {
+            throw new Error('Error al asignar paciente');
+          }
+        })
+        .catch(error => {
+          console.error(error);
+          alert('Hubo un problema al asignar el paciente.');
+        });
+      });
+    });

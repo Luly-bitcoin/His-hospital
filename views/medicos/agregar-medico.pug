@@ -1,0 +1,43 @@
+extends ../layout.pug
+
+block content
+  head
+    title Agregar Médico
+    link(rel="stylesheet", href="/css/style.css")
+
+  .contenedor
+    img.logo-flotante(src="/img/logo.png", alt="Logo")
+    br
+    .formulario-box
+      h2 Registro de Médico
+      form#formMedico
+        .input-group
+          label(for="dni") DNI
+          input#dni(type="text", name="dni", required)
+
+        .input-group
+          label(for="nombre") Nombre Completo
+          input#nombre(type="text", name="nombre", required)
+
+        .input-group
+          label(for="correo") Correo Electrónico
+          input#correo(type="email", name="correo", required)
+
+        .input-group
+          label(for="sexo") Sexo
+          select#sexo(name="sexo", required)
+            option(value="") Seleccione
+            option(value="Masculino") Masculino
+            option(value="Femenino") Femenino
+
+        .input-group
+          label(for="matricula") Matrícula
+          input#matricula(type="text", name="matricula", required)
+
+        .input-group
+          label(for="especialidad") Especialidad
+          input#especialidad(type="text", name="especialidad", required)
+
+        button(type="submit", class="boton") Guardar Médico
+
+  script(src="/js/agregar-medico.js")

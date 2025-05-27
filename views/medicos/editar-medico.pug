@@ -1,0 +1,39 @@
+extends ../layout
+
+block content
+  head
+    title Editar Médico
+
+  h1 Editar Médico
+
+  form#formEditarMedico
+    label DNI (no editable):
+      input#dni(type="text", disabled)
+    br
+
+    label Nombre:
+      input#nombre(type="text", required)
+    br
+
+    label Correo:
+      input#correo(type="email", required)
+    br
+
+    label Sexo:
+      select#sexo(required)
+        option(value="Masculino") Masculino
+        option(value="Femenino") Femenino
+    br
+
+    label Matrícula:
+      input#matricula(type="text", required)
+    br
+
+    label Especialidad:
+      input#especialidad(type="text", required)
+    br
+
+    button(type="submit") Guardar cambios
+    button(type="button", onclick="window.location.href='/medicos'") Cancelar
+
+  script(src="/js/editar-medico.js")

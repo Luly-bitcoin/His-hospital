@@ -1,0 +1,113 @@
+extends ../layout
+
+block content
+  head
+    title Agregar Paciente
+    link(rel="stylesheet", href="/css/style.css")
+    style.
+      body {
+        font-family: 'Segoe UI', sans-serif;
+        background: linear-gradient(to bottom, #7dbcff, rgba(255,255,255,0.8)), url('/img/hospital2.jpg'), url('/img/hospital .jpg'), url('/img/hospital3.jpg');
+        background-repeat: no-repeat;
+        background-size: cover, 33.33% 100%, 33.33% 100%, 33.33% 100%;
+        background-position: center, left, center, right;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 40px 0;
+      }
+      .toast {
+        visibility: hidden;
+        min-width: 250px;
+        margin-left: -125px;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 8px;
+        padding: 16px;
+        position: fixed;
+        z-index: 1000;
+        left: 50%;
+        bottom: 30px;
+        font-size: 16px;
+        opacity: 0;
+        transition: opacity 0.5s, bottom 0.5s;
+      }
+      .toast.show {
+        visibility: visible;
+        opacity: 1;
+        bottom: 50px;
+      }
+
+  .contenedor
+    img.logo-flotante(src="/img/logo.png", alt="Logo")
+    br
+    br
+    .formulario-box
+      h2 Registro de Paciente
+      br
+      form
+        label(for="derivado")
+          input(type="checkbox", id="derivado", name="deri", onchange="toggleGuardia()")
+          |  Derivado por Guardia
+
+        .flex-row
+          .input-group(style="flex: 1;")
+            label(for="dni") DNI
+            input(type="text", id="dni", name="dni", placeholder="Ej: 30123456", required)
+            #errorDni.error-message
+          .buscar-btn
+            button(type="button", class="boton", onclick="buscarPaciente()") Buscar
+          #toast.toast
+
+        .form-columns
+          .columna
+            .input-group
+              label(for="nombre") Nombre Completo
+              input(type="text", id="nombre_completo", name="nombre_completo", placeholder="Ej: Juan Pérez", required)
+              #errorNombre.error-message
+              br
+            .input-group
+              label(for="telefono") Teléfono
+              input(type="text", id="telefono", name="telefono", placeholder="Ej: 11-1234-5678", required)
+              #errorTelefono.error-message
+              br
+            .input-group
+              label(for="fecha_nacimiento") Fecha de Nacimiento
+              input(type="date", id="fecha_nacimiento", name="fecha_nacimiento", required)
+
+          .columna
+            .input-group
+              label(for="direccion") Dirección
+              input(type="text", name="direccion", id="direccion", placeholder="Ej: Calle falsa 123", required)
+              br
+            .input-group
+              label(for="contacto_emergencia") Contacto de Emergencia
+              input(type="text", id="contacto_emergencia", name="contacto_emergencia", placeholder="Ej: 11-1234-5678")
+              #errorContacto.error-message
+              br
+            label(for="sexo") Sexo
+            select(id="sexo", name="sexo", required)
+              option(value="") Seleccionar
+              option(value="M") Masculino
+              option(value="F") Femenino
+            #errorSexo.error-message
+
+        #internacionFields(style="display: none;")
+          hr.separador
+          h3 🛏 Para pacientes derivados
+          .input-group
+            label(for="motivo") Motivo de Internación
+            input(type="text", name="motivo", id="motivo")
+          .input-group
+            label(for="tipoCama") Tipo de cama
+            select(name="tipoCama", id="tipoCama")
+              option(value="") Seleccionar
+              option(value="comun") Común
+              option(value="terapia") Terapia Intensiva
+
+        button(type="submit", class="boton", onclick="validarFormulario(event)") Registrar Paciente
+        button(type="button", id="limpiarBtn", class="boton", onclick="limpiarFormulario()") Limpiar
+
+  script(src="/js/agregar-paciente.js")
