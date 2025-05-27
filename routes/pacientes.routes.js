@@ -9,7 +9,7 @@ import {
 const router = express.Router();
 
 // Vistas
-router.get("/nuevo", (req, res) => {
+router.get("/agregar-paciente", (req, res) => {
   res.render("pacientes/agregar-paciente");
 });
 
@@ -22,7 +22,6 @@ router.get("/verificar-dni/:dni", verificarDNI);
 router.post("/agregar", agregarPaciente);
 router.get("/disponibles", listarPacientes);
 
-// Vista raíz de pacientes (si querés usarla)
 router.get("/", listar);
 
 export default router;

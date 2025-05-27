@@ -16,7 +16,7 @@ const emergenciasController = {
 
   postRegistrarEmergencia: (req, res) => {
     const { dni, hora, cama_id } = req.body;
-    console.log('Emergencia registrada:', { dni, hora, cama_id });
+    console.log('Emergencias registrada:', { dni, hora, cama_id });
 
     if (!dni || !hora || !cama_id) {
       return res.status(400).json({ message: 'Faltan datos' });

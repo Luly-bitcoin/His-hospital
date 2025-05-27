@@ -39,6 +39,9 @@ block content
         opacity: 1;
         bottom: 50px;
       }
+      select {
+        width: 100%;
+      }
 
   .contenedor
     img.logo-flotante(src="/img/logo.png", alt="Logo")
@@ -76,6 +79,10 @@ block content
             .input-group
               label(for="fecha_nacimiento") Fecha de Nacimiento
               input(type="date", id="fecha_nacimiento", name="fecha_nacimiento", required)
+              br
+            .input-group 
+              label(for="obra-social") Obra Social 
+              input(type="text", id="obra-social", name="obra-social", reaquired, placeholder="Ej: Pami") 
 
           .columna
             .input-group
@@ -87,27 +94,18 @@ block content
               input(type="text", id="contacto_emergencia", name="contacto_emergencia", placeholder="Ej: 11-1234-5678")
               #errorContacto.error-message
               br
+            .input-group 
+              label(for="localidad") Localidad 
+              input(type="text", id="localidad", name="localidad", placeholder="Ej: Buenos Aires") 
+              br
             label(for="sexo") Sexo
+            br
             select(id="sexo", name="sexo", required)
               option(value="") Seleccionar
               option(value="M") Masculino
               option(value="F") Femenino
             #errorSexo.error-message
 
-        #internacionFields(style="display: none;")
-          hr.separador
-          h3 🛏 Para pacientes derivados
-          .input-group
-            label(for="motivo") Motivo de Internación
-            input(type="text", name="motivo", id="motivo")
-          .input-group
-            label(for="tipoCama") Tipo de cama
-            select(name="tipoCama", id="tipoCama")
-              option(value="") Seleccionar
-              option(value="comun") Común
-              option(value="terapia") Terapia Intensiva
-
         button(type="submit", class="boton", onclick="validarFormulario(event)") Registrar Paciente
-        button(type="button", id="limpiarBtn", class="boton", onclick="limpiarFormulario()") Limpiar
 
   script(src="/js/agregar-paciente.js")

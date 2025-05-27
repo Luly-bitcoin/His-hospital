@@ -21,6 +21,7 @@ const app = express();
 
 // Middleware para parsear JSON
 app.use(express.json());
+app.use(express.urlencoded({extended: true}));
 
 // Configuración del motor de vistas
 app.set('view engine', 'pug');
@@ -35,7 +36,12 @@ app.use('/', medicosRoutes);
 app.use('/camas', camasRoutes);
 app.use('/pacientes', pacientesRoutes);
 app.use('/enfermeria', enfermeriaRoutes);
-app.use('/emergencia', emergenciasRoutes);
+app.use('/emergencias', emergenciasRoutes);
+
+app.get('/camas', async (req, res) =>{
+  const alas = await obtenerAlasConHabitacionesYCamas();
+  res.render('camas',{alas: alas || []});
+});
 
 // Iniciar servidor
 app.listen(3000, () => {

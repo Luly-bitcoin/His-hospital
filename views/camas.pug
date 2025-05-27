@@ -1,4 +1,4 @@
-extends layout
+extends layout.pug 
 
 block content
   head
@@ -118,17 +118,36 @@ block content
         .menu, .alas { width: 100%; }
         .menu { order: -1; }
       }
-      .cam.libre { background: #d5f5e3; }
-      .cam.ocupada { background: #f5b7b1; }
-      .cam.higienizando { background: #fcf3cf; }
+      .cam.libre { 
+        background: #d5f5e3; 
+        }
+      .cam.ocupada { 
+        background: #f5b7b1; 
+        cursor: not-allowed;
+        pointer-event: none;
+        opacity: 0.6;
+        }
+      .cam.higienizando { 
+        background: #fcf3cf; 
+        cursor: not-allowed;
+        opacity: 0.6;
+        }
       .cam.seleccionada {
         border: 2px solid blue;
         transform: scale(1.1);
       }
       .asignar-paciente {
-        text-align: center;
+        display: block !important;
+        margin-top: 20px;
+        background-color: white;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        z-index: 1000;
       }
-
+      .asignar-paciente select{
+        width: 100%;
+      }
   header
     img(src="/img/logo.png", alt="Logo del Hospital")
     h1 Gestión de Camas
@@ -140,32 +159,32 @@ block content
       button(name="ocupadas") Camas Ocupadas
       button(name="higienizando") Camas Higienizando
       br
-      br
       .asignar-paciente
-        select#selectPaciente
+        select#selectPaciente(name="pacienteee") 
           option(value="") Seleccione un paciente
         button#btnAsignarPaciente Asignar
 
     .contenedor
-      each ala in [1,2,3]
+      each ala in alas
         .alas
-          h1 Ala #{ala}
-          each hab, i in ['A', 'B', 'C']
+          h1 Ala #{ala.numero}
+          each hab in ala.habitaciones
             .habitaciones
-              h2 Habitación #{hab}
+              h2 Habitación #{hab.codigo}
               .cam-container
-                each c in [1,2]
-                  .cam(data-id=`${ala}-${hab}-${c}`)
-                    h2 #{c}
+                each cama in hab.camas
+                  .cam(data-id=cama.id class=cama.estado_final)
+                    h2 #{cama.id}
                     img(src="/img/cama.png", alt="Cama")
 
-    section.emergencias
-      h1 Camas de Emergencia
-      .cam-container(style="justify-content:center;gap:24px;")
-        each e in ['E-1', 'E-2', 'E-3']
-          .cam(data-id=`${ala}-${hab}-${c}`)
-            h2 #{e}
-            img(src="/img/cama.png", alt="Cama emergencia")
+  section.emergencias
+    h1 Camas de Emergencia
+    .cam-container(style="justify-content:center;gap:24px;")
+      each e in ['E-1', 'E-2', 'E-3']
+        .cam(data-id=`emergencia-${e}`)
+          h2 #{e}
+          img(src="/img/cama.png", alt="Cama emergencia")
+
 
   script(src="https://code.jquery.com/jquery-3.6.0.min.js")
   script.
@@ -191,8 +210,6 @@ block content
     }
 
     $(document).ready(function () {
-      $('.asignar-paciente').hide();
-
       $('.cam').on('click', function () {
         $('.cam').removeClass('seleccionada');
         $(this).addClass('seleccionada');

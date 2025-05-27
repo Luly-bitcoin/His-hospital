@@ -11,7 +11,8 @@
       function buscarPaciente() {
   const dni = document.getElementById("dni").value;
   if (dni !== "") {
-    fetch(`http://localhost:3000/verificar-dni/${dni}`)
+    fetch(`http://localhost:3000/pacientes/verificar-dni/${dni}`)
+
       .then(response => response.json())
       .then(data => {
         if (data.existe) {
@@ -30,6 +31,9 @@
           document.getElementById("direccion").value = paciente.direccion || "";
           document.getElementById("direccion").disabled = true;
 
+          document.getElementById("localidad").value = paciente.localidad || "";
+          document.getElementById("localidad").disabled = true;
+
           document.getElementById("contacto_emergencia").value = paciente.contacto_emergencia || "";
           document.getElementById("contacto_emergencia").disabled = true;
 
@@ -38,6 +42,9 @@
 
           document.getElementById("telefono").value = paciente.telefono || "";
           document.getElementById("telefono").disabled = true;
+
+          document.getElementById("obra-social").value = paciente.obraSocial || "";
+          document.getElementById("obra-social").disabled = true;
 
           // Derivado y su campo relacionado
           if (paciente.derivado) {
@@ -93,6 +100,7 @@ function limpiarFormulario() {
 
 async function validarFormulario(event) {
   event.preventDefault();
+  console.log("ValidarFormulario ejecutando");
 
   let valid = true;
   document.querySelectorAll(".error-message").forEach(el => el.textContent = "");
@@ -106,6 +114,8 @@ async function validarFormulario(event) {
   const fecha = document.getElementById("fecha_nacimiento").value;
   const direccion = document.getElementById("direccion").value.trim();
   const derivado = document.getElementById("derivado").checked;
+  const localidad = document.getElementById("localidad").value.trim();
+  const obraSocial = document.getElementById("obra-social").value.trim();
 
   // Expresiones regulares para validar
   const dniRegex = /^\d{8}$/;
@@ -114,6 +124,14 @@ async function validarFormulario(event) {
 
   if (!dniRegex.test(dni)) {
     document.getElementById("errorDni").textContent = "DNI inválido (8 dígitos)";
+    valid = false;
+  }
+  if(localidad.length === 0){
+    document.getElementById("errorLoc").textContent = "Localidad inválida";
+    valid = false;
+  }
+  if(obraSocial.length === 0){
+    document.getElementById("ErrorObra").textContent = "Obra social inválida";
     valid = false;
   }
   if (!nombreRegex.test(nombre)) {
@@ -150,13 +168,15 @@ async function validarFormulario(event) {
     fecha: fecha,
     direcc: direccion,
     contacto: contacto,
-    sexo: sexo === "M" ? "masculino" : "femenino", // el backend espera 'masculino' o 'femenino'
+    sexo: sexo === "M" ? "masculino" : "femenino",
     derivado: derivado,
-    telefono: telefono
+    telefono: telefono,
+    localidad: localidad,
+    obraSocial: obraSocial
   };
 
   try {
-    const response = await fetch("http://localhost:3000/agregar-paciente", {
+    const response = await fetch("http://localhost:3000/pacientes/agregar", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -166,6 +186,8 @@ async function validarFormulario(event) {
 
     const data = await response.json();
 
+    console.log("Respuesta del backend: ", response.status, data);
+
     if (response.ok) {
       mostrarToast("Paciente guardado correctamente");
       limpiarFormulario();
@@ -174,6 +196,6 @@ async function validarFormulario(event) {
     }
   } catch (error) {
     console.error("Error al guardar paciente:", error);
-    mostrarToast("Paciente guardado correctamente");
+    mostrarToast("Error al guardar paciente");
   }
 }

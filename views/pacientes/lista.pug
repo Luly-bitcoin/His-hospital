@@ -95,20 +95,20 @@ html(lang="en")
 
         pacientes.forEach(p => {
           const fila = document.createElement('tr');
-          fila.id = `fila-${p.dni}`;
-          fila.innerHTML = `
+          fila.id = fila-${p.dni};
+          fila.innerHTML = 
             <td>${p.nombre_completo}</td>
             <td>${p.dni}</td>
             <td>${p.cama_id}</td>
             <td>${new Date(p.fecha_asignacion).toLocaleString()}</td>
             <td><button onclick="darAlta('${p.dni}')">Dar Alta</button></td>
-          `;
+          ;
           lista.appendChild(fila);
         });
       }
 
       async function darAlta(dni) {
-        const confirmacion = confirm(`¿Estás seguro de que deseas dar de alta al paciente con DNI ${dni}?`);
+        const confirmacion = confirm(¿Estás seguro de que deseas dar de alta al paciente con DNI ${dni}?);
         if (!confirmacion) return;
 
         const res = await fetch('http://localhost:3000/dar-alta', {
@@ -120,7 +120,7 @@ html(lang="en")
         const data = await res.json();
         alert(data.mensaje);
 
-        const fila = document.getElementById(`fila-${dni}`);
+        const fila = document.getElementById(fila-${dni});
         fila.classList.add('desaparecer');
 
         setTimeout(() => {
@@ -138,3 +138,4 @@ html(lang="en")
       });
 
       window.onload = cargarPacientesInternados;
+
