@@ -37,6 +37,7 @@ app.use('/camas', camasRoutes);
 app.use('/pacientes', pacientesRoutes);
 app.use('/enfermeria', enfermeriaRoutes);
 app.use('/emergencias', emergenciasRoutes);
+app.use('/medicos', enfermeriaRoutes);
 
 app.get('/camas', async (req, res) =>{
   const alas = await obtenerAlasConHabitacionesYCamas();

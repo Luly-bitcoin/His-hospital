@@ -55,8 +55,25 @@ html(lang="en")
 
   body
     header
-      img(src="img/logo.png", alt="Logo del Hospital")
-      h1 Pacientes Internados
+      .logo-titulo
+        img.logo(src="../img/logo.png" alt="logo")
+        h1 Hospital Central
+      nav
+        ul
+          li
+            a(href="/") Inicio
+          li
+            a(href="/pacientes/agregar-paciente") Pacientes
+          li
+            a(href="/pacientes/lista") Lista de pacientes
+          li
+            a(href="/medicos") Médicos
+          li
+            a(href="/camas") Camas
+          li
+            a(href="#") Citas
+          li
+            a(href="/enfermeria") Administración
     br
     br
     h2 Lista de Pacientes Internados

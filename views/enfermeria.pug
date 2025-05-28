@@ -53,6 +53,7 @@ html(lang="es")
       }
 
       input[type="text"],
+      input[type="email"],
       input[type="date"],
       input[type="number"],
       textarea {
@@ -108,68 +109,170 @@ html(lang="es")
           gap: 10px;
         }
       }
-  body
-    header
-      img.logo(src="img/logo.png", alt="Logo")
-      h1 Evaluación Inicial por Enfermería
+body
+  header
+    img.logo(src="img/logo.png", alt="Logo")
+    h1 Evaluación Inicial por Enfermería
 
-    .container
-      form
-        .form-section
-          h2 Datos Personales
-          label Nombre completo
-          input(type="text" placeholder="Juan Pérez")
-          label Fecha de nacimiento
-          input(type="date" placeholder="1990-05-20")
-          label Dirección
-          input(type="text" placeholder="Calle Falsa 123")
-          label Teléfono
-          input(type="text" placeholder="123456789")
-          label Contacto de emergencia
-          input(type="text" placeholder="María López - 987654321")
+  .container
+    form(action="/enfermeria/evaluacion" method="POST")
+      .form-section
+        h2 Datos Personales
+        label(for="dni") DNI 
+        input#dni(type="text" name="dni" placeholder="Ej: 12345678" required)
+        label(for="nombre") Nombre completo
+        input#nombre(type="text" name="nombre" placeholder="Ej: Juan Pérez" required)
+        label(for="fecha") Fecha de nacimiento
+        input#fecha(type="date" name="fecha" placeholder="Ej: 1990-05-20" required)
+        label(for="direccion") Dirección
+        input#direccion(type="text" name="direccion" placeholder="Ej: Calle Falsa 123" required)
+        label(for="localidad") Localidad 
+        input#localidad(type="text" name="localidad" placeholder="Ej: Buenos Aires" required)
+        label(for="telefono") Teléfono
+        input#telefono(type="text" name="telefono" placeholder="Ej: 123456789" required)
+        label(for="contacto") Contacto de emergencia
+        input#contacto(type="text" name="contacto" placeholder="Ej: 987654321" required)
+        label(for="obraSocial") Obra Social 
+        input#obraSocial(type="text" name="obraSocial" placeholder="Ej: Pami" required)
 
-        .form-section
-          h2 Historial Médico
-          label Enfermedades previas
-          textarea
-          label Cirugías previas
-          textarea
-          label Alergias
-          textarea
-          label Medicamentos actuales
-          textarea
-          label Antecedentes familiares
-          textarea
+      .form-section 
+        h2 Médico a cargo 
+        label(for="medico_dni") DNI
+        input(type="text" id="dni_medico" name="dni_medico" placeholder="Ej: 22334567" required)
+        label(for="medico_nombre") Nombre completo
+        input(type="text" id="medico_nombre" name="medico_nombre" placeholder="Ej: Juan Pérez" required)
+        label(for="medico_correo") Correo
+        input(type="email" id="medico_correo" name="medico_correo" placeholder="Ej: Doctor@hotmail.com" required)
+        label(for="medico_matricula") Matricula 
+        input(type="text" id="medico_matricula" name="medico_matricula" placeholder="Ej: MP12345" required)
+        label(for="medico_especialidad") Especialidad 
+        input(type="text" id="medico_especialidad" name="medico_especialidad" placeholder="Ej: Clinica" required)
 
-        .form-section
-          h2 Motivo de Internación
-          label Motivo de internación
-          textarea
-          label Síntomas principales
-          textarea
+      .form-section
+        h2 Historial Médico
+        label(for="enfermedades_previas") Enfermedades previas
+        textarea(name="enfermedades_previas" id="enfermedades_previas" required)
+        label(for="cirugias_previas") Cirugías previas
+        textarea(name="cirugias_previas" id="cirugias_previas" required)
+        label(for="alergias") Alergias
+        textarea(name="alergias" id="alergias" required)
+        label(for="medicamentos_actuales") Medicamentos actuales
+        textarea(name="medicamentos_actuales" id="medicamentos_actuales" required)
+        label(for="antecedentes_familiares") Antecedentes familiares
+        textarea(name="antecedentes_familiares" id="antecedentes_familiares" required)
 
-        .form-section
-          h2 Signos Vitales
-          label Presión arterial
-          input(type="text")
-          label Frecuencia cardíaca
-          input(type="number")
-          label Frecuencia respiratoria
-          input(type="number")
-          label Temperatura corporal (°C)
-          input(type="number" step="0.1")
-          label Observaciones generales
-          textarea
+      .form-section
+        h2 Motivo de Internación
+        label(for="motivo") Motivo de internación
+        textarea(name="motivo" id="motivo" required)
+        label(for="sintomas") Síntomas principales
+        textarea(name="sintomas" id="sintomas" required)
 
-        .form-section
-          h2 Plan de Cuidados Preliminar
-          label Intervenciones inmediatas
-          textarea
-          label Medicamentos administrados
-          textarea
-          label Comunicación con el equipo médico
-          textarea
+      .form-section
+        h2 Signos Vitales
+        label(for="presion_arterial") Presión arterial
+        input(type="text" name="presion_arterial" id="presion_arterial" required)
+        label(for="frecuencia_cardiaca") Frecuencia cardíaca
+        input(type="number" name="frecuencia_cardiaca" id="frecuencia_cardiaca" placeholder= "Ej: 74" required)
+        label(for="frecuencia_respiratoria") Frecuencia respiratoria
+        input(type="number" name="frecuencia_respiratoria" id="frecuencia_respiratoria" required)
+        label(for="temperatura") Temperatura corporal (°C)
+        input(type="number" step="0.1" name="temperatura" id="temperatura" required)
+        label(for="observaciones_generales") Observaciones generales
+        textarea(name="observaciones_generales" id="observaciones_generales" required)
+      
+      .form-section 
+        h2 Observaciones 
+        label(for="observaciones") Observaciones 
+        textarea(name="observaciones" id="observaciones" required)
 
-        .botones
-          button.guardar-btn(type="submit") Guardar Evaluación
-          button.volver-btn(type="button" onclick="window.location.href='index.html'") Volver
+      .form-section
+        h2 Plan de Cuidados Preliminar
+        label(for="intervenciones") Intervenciones inmediatas
+        textarea(name="intervenciones" id="intervenciones" required)
+        label(for="medicamentos") Medicamentos administrados
+        textarea(name="medicamentos" id="medicamentos" required)
+        label(for="comunicacion") Comunicación con el equipo médico
+        textarea(name="comunicacion" id="comunicacion" required)
+
+      .botones
+        button.guardar-btn(type="submit") Guardar Evaluación
+        button.volver-btn(type="button" onclick="window.location.href='/'") Volver
+
+  script(src="/js/enfermeria.js")
+  script.
+    document.addEventListener("DOMContentLoaded", () => {
+      const dniInput = document.getElementById("dni");
+
+      dniInput.addEventListener("keydown", async (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          const dni = dniInput.value.trim();
+          if (!dni) return;
+
+          try {
+            const response = await fetch(`/pacientes/verificar-dni/${dni}`);
+            const result = await response.json();
+
+            if (!result.existe) {
+              alert("Paciente no encontrado");
+              return;
+            }
+
+            const paciente = result.paciente;
+
+            // Autocompletar usando IDs únicos
+            document.getElementById("nombre").value = paciente.nombre_completo || "";
+            document.getElementById("fecha").value = paciente.fecha_nacimiento?.split("T")[0] || "";
+            document.getElementById("direccion").value = paciente.direccion || "";
+            document.getElementById("localidad").value = paciente.localidad || "";
+            document.getElementById("telefono").value = paciente.telefono || "";
+            document.getElementById("contacto").value = paciente.contacto_emergencia || "";
+            document.getElementById("obraSocial").value = paciente.obra_social || "";
+
+          } catch (error) {
+            console.error("Error al buscar paciente:", error);
+            alert("Ocurrió un error al buscar el paciente.");
+          }
+        }
+      });
+    });
+
+    document.addEventListener("DOMContentLoaded", ()=>{
+      const formulario = document.querySelector("form");
+      if(formulario){
+        formulario.addEventListener("submit", guardarEvaluacion);
+      }
+    })
+
+    document.getElemntById("dni_medico").addEventListener("keydown", async (event)=>{
+      if (e.key === "Enter") {
+        event.preventDefault();
+        const dniMedico = event.target.value.trim();
+        if (!dniMedico) return alert("Ingrese el DNI del medico");
+
+        try {
+          const response = await fetch(`/medicos/verificar-dni/${dni}`);
+          if(!resdponse.ok) throw new Error("Error al buscar medico");
+          const data = await response.json();
+
+          if (!data.existe) {
+            alert("Médico no encontrado");
+            // Limpia campos médico
+            document.getElementById("medico_nombre").value = "";
+            document.getElementById("medico_matricula").value = "";
+            document.getElementById("medico_especialidad").value = "";
+            return;
+          }
+
+            const medico = data.medico;
+            document.getElementById("medico_nombre").value = medico.nombre || "";
+            document.getElementById("medico_matricula").value = medico.matricula || "";
+            document.getElementById("medico_especialidad").value = medico.especialidad || "";
+
+          } catch (error) {
+            console.error("Error al buscar médico:", error);
+            alert("Ocurrió un error al buscar el médico.");
+          }
+        }
+      });

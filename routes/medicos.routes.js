@@ -1,5 +1,5 @@
 import express from 'express';
-import {conexion} from '../config/db.js'; 
+import { conexion } from '../config/db.js'; 
 
 const router = express.Router();
 
@@ -8,6 +8,9 @@ router.get("/medicos", (req, res) => res.render("medicos/medicos"));
 
 // Vista para agregar médico
 router.get("/medicos/agregar-medico", (req, res) => res.render("medicos/agregar-medico"));
+
+// Vista para editar médico
+router.get("/medicos/editar/:dni", (req, res) => res.render("medicos/editar-medico"));
 
 // Obtener médicos en formato JSON
 router.get("/medicos-json", async (req, res) => {
@@ -24,9 +27,48 @@ router.get("/medicos-json", async (req, res) => {
   }
 });
 
-// Vista para editar médico
-router.get("/medicos/editar/:dni", (req, res) => {
-  res.render("medicos/editar-medico");
+// Obtener un médico específico (API para editar-medico.js)
+router.get("/api/medicos/:dni", async (req, res) => {
+  const dni = req.params.dni;
+  try {
+    const [rows] = await conexion.execute(`
+      SELECT dni, nombre, correo, sexo, matricula, especialidad
+      FROM medicos
+      WHERE dni = ? AND estado = 1
+    `, [dni]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Médico no encontrado" });
+    }
+
+    res.json(rows[0]);
+  } catch (error) {
+    console.error("Error al obtener médico:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
+});
+
+// Actualizar un médico (PUT)
+router.put("/api/medicos/:dni", async (req, res) => {
+  const dni = req.params.dni;
+  const { nombre, correo, sexo, matricula, especialidad } = req.body;
+
+  try {
+    const [resultado] = await conexion.execute(`
+      UPDATE medicos
+      SET nombre = ?, correo = ?, sexo = ?, matricula = ?, especialidad = ?
+      WHERE dni = ? AND estado = 1
+    `, [nombre, correo, sexo, matricula, especialidad, dni]);
+
+    if (resultado.affectedRows === 0) {
+      return res.status(404).json({ message: "Médico no encontrado o sin cambios" });
+    }
+
+    res.json({ message: "Médico actualizado correctamente" });
+  } catch (error) {
+    console.error("Error al actualizar médico:", error);
+    res.status(500).json({ message: "Error interno al actualizar médico" });
+  }
 });
 
 export default router;

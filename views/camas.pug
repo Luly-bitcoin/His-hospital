@@ -164,18 +164,19 @@ block content
           option(value="") Seleccione un paciente
         button#btnAsignarPaciente Asignar
 
-    .contenedor
-      each ala in alas
-        .alas
-          h1 Ala #{ala.numero}
-          each hab in ala.habitaciones
-            .habitaciones
-              h2 Habitación #{hab.codigo}
-              .cam-container
-                each cama in hab.camas
-                  .cam(data-id=cama.id class=cama.estado_final)
-                    h2 #{cama.id}
-                    img(src="/img/cama.png", alt="Cama")
+  .contenedor
+    each ala in alas
+      .alas
+        h1 Ala #{ala.numero}
+        each hab in ala.habitaciones
+          .habitaciones
+            h2 Habitación #{hab.codigo}
+            .cam-container
+              each cama in hab.camas
+                .cam(data-id=cama.id class=cama.estado_final)
+                  h2 #{cama.id}
+                  img(src="/img/cama.png", alt="Cama")
+
 
   section.emergencias
     h1 Camas de Emergencia

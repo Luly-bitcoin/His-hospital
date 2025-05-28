@@ -2,36 +2,106 @@ extends ../layout
 
 block content
   head
+  
     title Lista de Médicos
-    link(rel="stylesheet", href="/css/style.css")
+    link(rel="stylesheet", href="../css/style.css")
     style.
-      body { font-family: 'Segoe UI', sans-serif; background-color: #f0f8ff; padding: 40px; }
-      .titulo { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-      .boton-agregar { padding: 10px 20px; background-color: #2a8df2; color: white; border: none; border-radius: 6px; cursor: pointer; }
-      #buscador { width: 100%; padding: 10px; margin-bottom: 20px; font-size: 16px; border: 1px solid #ccc; border-radius: 6px; }
-      table { width: 100%; border-collapse: collapse; background-color: white; box-shadow: 0 0 8px rgba(0,0,0,0.1); }
-      th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #ddd; }
-      th { background-color: #e6f0ff; }
-      .acciones button { margin-right: 5px; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; }
-      .editar { background-color: #4caf50; color: white; }
-      .borrar { background-color: #f44336; color: white; }
+      .titulo { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        margin-bottom: 20px; 
+        }
+      .boton-agregar { 
+        padding: 10px 20px; 
+        background-color: #2a8df2; 
+        color: white; 
+        border: none; 
+        border-radius: 6px; 
+        cursor: pointer; 
+        }
+      #buscador { 
+        width: 95%; 
+        padding: 10px; 
+        margin-bottom: 20px; 
+        font-size: 16px; 
+        border: 1px solid #ccc; 
+        border-radius: 6px; 
+        }
+      table { 
+        width: 100%; 
+        border-collapse: collapse; 
+        background-color: white;
+        box-shadow: 0 0 8px rgba(0,0,0,0.1);
+        }
+      th, td { 
+        padding: 12px 16px; 
+        text-align: left; 
+        border-bottom: 1px solid #ddd; 
+        }
+      th { 
+        background-color: #e6f0ff; 
+        }
+      .acciones button { 
+        margin-right: 5px; 
+        padding: 6px 12px; 
+        border: none; 
+        border-radius: 4px; 
+        cursor: pointer; 
+        }
+      .editar { 
+        background-color: #4caf50; 
+        color: white; 
+        }
+      .borrar { 
+        background-color: #f44336;
+        color: white; 
+        } 
+      .font-boton{
+        display:flex;
+        justify-content:end;
+        margin: 10px;
+      }
+      .font-buscador{
+        display: flex;
+        justify-content: center;
+      }
+    header
+      
+        .logo-titulo
+          img.logo(src="img/logo.png" alt="logo")
+          h1 Hospital Central
+        nav
+          ul
+            li
+              a(href="/") Inicio
+            li
+              a(href="/pacientes/agregar-paciente") Pacientes
+            li
+              a(href="/pacientes/lista") Lista de pacientes
+            li
+              a(href="/medicos") Médicos
+            li
+              a(href="/camas") Camas
+            li
+              a(href="#") Citas
+            li
+              a(href="/enfermeria") Administración
+    .font-boton
+      button.boton-agregar(onclick="window.location.href='/medicos/agregar-medico'") + Agregar Médico
+    .font-buscador
+      input#buscador(type="text", placeholder="Buscar por nombre, correo o DNI...", oninput="filtrarMedicos()")
+    
+    table
+      thead
+        tr
+          th Nombre y Apellido
+          th Correo
+          th Sexo
+          th Matrícula
+          th DNI
+          th Especialidad
+          th Acciones
+      tbody#tabla-medicos
 
-  .titulo
-    h2 Lista de Médicos
-    button.boton-agregar(onclick="window.location.href='/medicos/agregar-medico'") + Agregar Médico
-
-  input#buscador(type="text", placeholder="Buscar por nombre, correo o DNI...", oninput="filtrarMedicos()")
-
-  table
-    thead
-      tr
-        th Nombre y Apellido
-        th Correo
-        th Sexo
-        th Matrícula
-        th DNI
-        th Especialidad
-        th Acciones
-    tbody#tabla-medicos
-
-  script(src="/js/medicos.js")
+    script(src="/js/medicos.js")
