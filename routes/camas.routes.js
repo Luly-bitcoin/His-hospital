@@ -4,22 +4,18 @@ import { conexion } from '../config/db.js';
 
 const router = express.Router();
 
-router.get('/', (req, res) => {
-  res.render('camas');
-});
-
 router.post('/asignar-paciente', async (req, res) => {
-  const { camaId, pacienteId } = req.body;
-  if (!camaId || !pacienteId) {
+  const { Idcama, pacienteId } = req.body;
+  if (!Idcama || !pacienteId) {
     return res.status(400).json({ message: 'Datos incompletos' });
   }
 
   try {
     // Validar que no haya otra asignación activa
     const [existente] = await conexion.query(`
-      SELECT id FROM asignaciones_camas 
-      WHERE cama_id = ? AND fecha_alta IS NULL
-    `, [camaId]);
+      SELECT id FROM internaciones
+      WHERE id_cama = ? AND fecha_egreso IS NULL
+    `, [Idcama]);
 
     if (existente.length > 0) {
       return res.status(400).json({ message: 'La cama ya está ocupada' });
@@ -28,9 +24,9 @@ router.post('/asignar-paciente', async (req, res) => {
     const fechaAsignacion = new Date();
 
     await conexion.query(`
-      INSERT INTO asignaciones_camas (paciente_id, cama_id, fecha_asignacion)
+      INSERT INTO internaciones (paciente_id, id_cama, fecha_asignacion)
       VALUES (?, ?, ?)
-    `, [pacienteId, camaId, fechaAsignacion]);
+    `, [pacienteId, Idcama, fechaAsignacion]);
 
     res.status(200).json({ message: 'Paciente asignado correctamente' });
 
@@ -63,30 +59,30 @@ function agruparCamas(camas) {
 }
 
 
-router.get('/', async (req, res) => {
+router.get('/camas', async (req, res) => {
   try {
-    const query = `
-      SELECT
-        c.id AS cama_id,
-        c.numero,
-        h.ala_id AS ala,
-        h.id AS habitacion,
-        CASE
-          WHEN ac.id IS NOT NULL AND ac.fecha_alta IS NULL THEN 'ocupada'
-          WHEN c.estado = 'higienizando' THEN 'higienizando'
-          ELSE 'libre'
-        END AS estado_final
-      FROM camas c
-      JOIN habitaciones h ON c.habitacion_id = h.id
-      LEFT JOIN asignaciones_camas ac 
-        ON c.id = ac.cama_id AND ac.fecha_alta IS NULL
-      ORDER BY ala, habitacion, c.numero;
-    `;
-    const [camas] = await conexion.query(query);
-    res.render('camas', { camas }); // ya las mandas a la vista
+    const [camas] = await createPool.query(`
+  SELECT
+    c.id AS id_cama,
+    c.id AS numero, -- cambiamos c.numero por c.id
+    h.ala_id AS ala,
+    h.id AS habitacion,
+    CASE
+      WHEN i.id IS NOT NULL AND i.fecha_egreso IS NULL THEN 'ocupada'
+      WHEN c.estado = 'higienizando' THEN 'higienizando'
+      ELSE 'libre'
+    END AS estado
+  FROM camas c
+  JOIN habitaciones h ON c.habitacion_id = h.id
+  LEFT JOIN internaciones i 
+    ON c.id = i.id_cama AND i.fecha_egreso IS NULL
+  ORDER BY ala, habitacion, c.id;
+`);
+
+      res.render('camas', [camas]);
   } catch (err) {
     console.error(err);
-    res.status(500).send('Error al cargar las camas');
+    res.render('camas', {camas: [], error: 'Error al cargar las camas'});
   }
 });
 

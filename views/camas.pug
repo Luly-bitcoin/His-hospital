@@ -2,6 +2,7 @@ extends layout.pug
 
 block content
   head
+    script(src="https://code.jquery.com/jquery-3.6.0.min.js")
     title Gestión de Camas
     link(rel="stylesheet", href="/css/style.css")
     style.
@@ -149,7 +150,7 @@ block content
         width: 100%;
       }
   header
-    img(src="/img/logo.png", alt="Logo del Hospital")
+    img(src="/img/logo.png", alt="Logo del Hospital" )
     h1 Gestión de Camas
 
   .camas
@@ -160,48 +161,59 @@ block content
       button(name="higienizando") Camas Higienizando
       br
       .asignar-paciente
-        select#selectPaciente(name="pacienteee") 
+        select#selectPaciente(name="pacienteid") 
           option(value="") Seleccione un paciente
+          if paciente && pacientes.length 
+            each paciente in pacientes
+              option(value=pacientes.dni) #{pacientes.dni} - #{pacientes.nombre_completo}
         button#btnAsignarPaciente Asignar
 
-  .contenedor
-    each ala in alas
-      .alas
-        h1 Ala #{ala.numero}
-        each hab in ala.habitaciones
-          .habitaciones
-            h2 Habitación #{hab.codigo}
-            .cam-container
-              each cama in hab.camas
-                .cam(data-id=cama.id class=cama.estado_final)
-                  h2 #{cama.id}
-                  img(src="/img/cama.png", alt="Cama")
+    .contenedor
+      if alas && alas.length
+        each ala in alas
+          .alas
+            h1 Ala #{ala.nombre}
+            if ala.habitaciones && ala.habitaciones.length
+              each hab in ala.habitaciones
+                .habitaciones
+                  h2 Habitación #{hab.id}
+                  if hab.camas && hab.camas.length
+                    .cam-container
+                      each cama in hab.camas
+                        .cam(data-id=cama.id class=cama.estado_final title=`Cama ID: ${cama.id} - Estado: ${cama.estado_final}`)
+                          h2 #{cama.id}
+                          img(src="/img/cama.png", alt="Cama")
+                  else
+                    p No hay camas en esta habitación
+            else
+              p No hay habitaciones en esta ala
+      else
+        p No hay alas para mostrar
+
+    section.emergencias
+      h1 Camas de Emergencia
+      .cam-container(style="justify-content:center;gap:24px;")
+        each e in ['E-1', 'E-2', 'E-3']
+          .cam(data-id=`emergencia-${e}`)
+            h2 #{e}
+            img(src="/img/cama.png", alt="Cama emergencia")
 
 
-  section.emergencias
-    h1 Camas de Emergencia
-    .cam-container(style="justify-content:center;gap:24px;")
-      each e in ['E-1', 'E-2', 'E-3']
-        .cam(data-id=`emergencia-${e}`)
-          h2 #{e}
-          img(src="/img/cama.png", alt="Cama emergencia")
-
-
-  script(src="https://code.jquery.com/jquery-3.6.0.min.js")
   script.
     let camaSeleccionadaId = null;
 
     function cargarPacientes() {
-      fetch('/pacientes-disponibles')
+      fetch('/pacientes/pacientes-disponibles')
         .then(response => {
           if (!response.ok) throw new Error('Error al obtener pacientes');
           return response.json();
         })
         .then(pacientes => {
-          const select = $('#selectPaciente');
+          console.log("Pacientes recibidos: ", pacientes);
+          const select = $('#selectPaciente'); 
           select.empty().append('<option value="">Seleccione un paciente</option>');
           pacientes.forEach(p => {
-            select.append(`<option value="${p.id}">${p.nombre}</option>`);
+            select.append(`<option value="${p.dni}">${p.dni} - ${p.nombre_completo}</option>`);
           });
         })
         .catch(error => {
@@ -212,19 +224,19 @@ block content
 
     $(document).ready(function () {
       $('.cam').on('click', function () {
+        if ($(this).hasClass('ocupada') || $(this).hasClass('higienizando')) {
+          alert('Esta cama no está disponible para asignar.');
+          return;
+        }
         $('.cam').removeClass('seleccionada');
         $(this).addClass('seleccionada');
         camaSeleccionadaId = $(this).data('id');
-        if (!camaSeleccionadaId) {
-          alert('Esta cama no tiene ID asignado (data-id).');
-          return;
-        }
         cargarPacientes();
         $('.asignar-paciente').show();
       });
 
       $('#btnAsignarPaciente').on('click', function () {
-        const pacienteId = $('#selectPaciente').val();
+        const pacienteId = $('#selectPaciente').val(); // pacienteId será el DNI
         if (!camaSeleccionadaId || !pacienteId) {
           alert('Seleccione una cama y un paciente');
           return;
@@ -234,7 +246,7 @@ block content
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            camaId: camaSeleccionadaId,
+            Idcama: camaSeleccionadaId,
             pacienteId: pacienteId
           })
         })

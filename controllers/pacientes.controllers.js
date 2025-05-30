@@ -1,6 +1,5 @@
 import { conexion } from "../config/db.js";
 
-// Renderiza la vista de pacientes con todos los registros
 export const listar = async (req, res) => {
   try {
     const [rows] = await conexion.execute('SELECT * FROM pacientes');
@@ -11,18 +10,17 @@ export const listar = async (req, res) => {
   }
 };
 
-// API: Verificar si existe un paciente por DNI
 export const verificarDNI = async (req, res) => {
   try {
     const dni = req.params.dni;
-    console.log("DNI recibido para verificar:", dni);  // <-- log el DNI recibido
+    console.log("DNI recibido para verificar:", dni); 
     
     const [results] = await conexion.execute(
       'SELECT * FROM pacientes WHERE dni = ?', 
       [dni]
     );
 
-    console.log("Resultados de la consulta:", results); // <-- log resultados
+    console.log("Resultados de la consulta:", results); 
     
     if(results.length === 0) {
       return res.status(404).json({ existe: false, paciente: null });
@@ -35,7 +33,7 @@ export const verificarDNI = async (req, res) => {
   }
 };
 
-// API: Insertar nuevo paciente
+
 export const agregarPaciente = async (req, res) => {
   console.log('Datos recibidos: ', req.body);
   const { dni, nombre, fecha, direcc, contacto, sexo, derivado, telefono, localidad, obraSocial } = req.body;
@@ -66,11 +64,10 @@ export const agregarPaciente = async (req, res) => {
   }
 };
 
-// API: Obtener pacientes disponibles para asignar a cama
 export const listarPacientes = async (req, res) => {
   try {
     const [pacientes] = await conexion.execute(
-      'SELECT dni, nombre_completo FROM pacientes WHERE id_cama IS NULL'
+      'SELECT dni, nombre_completo FROM pacientes'
     );
     res.status(200).json(pacientes);
   } catch (error) {
@@ -78,3 +75,19 @@ export const listarPacientes = async (req, res) => {
     res.status(500).json({ mensaje: 'Error al obtener pacientes' });
   }
 };
+
+export async function obtenerPacientesDisponibles() {
+  try {
+    const [pacientes] = await conexion.execute(`
+      SELECT dni, nombre_completo 
+      FROM pacientes 
+      WHERE dni NOT IN (
+        SELECT dni_pacientes FROM internaciones
+      )
+    `);
+    return pacientes;
+  } catch (error) {
+    console.error('Error al obtener pacientes disponibles:', error);
+    return [];
+  }
+}

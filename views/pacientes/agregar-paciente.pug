@@ -51,10 +51,6 @@ block content
       h2 Registro de Paciente
       br
       form
-        label(for="derivado")
-          input(type="checkbox", id="derivado", name="deri", onchange="toggleGuardia()")
-          |  Derivado por Guardia
-
         .flex-row
           .input-group(style="flex: 1;")
             label(for="dni") DNI
@@ -107,5 +103,5 @@ block content
             #errorSexo.error-message
 
         button(type="submit", class="boton", onclick="validarFormulario(event)") Registrar Paciente
-
+        button(type="submit", class="boton", onclick="limpiar") Limpiar
   script(src="/js/agregar-paciente.js")
