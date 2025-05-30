@@ -5,6 +5,7 @@ import { conexion } from '../config/db.js';
 const router = express.Router();
 
 router.post('/asignar-paciente', async (req, res) => {
+  console.log('Datos recibidos en backend: ', req.body);
   const { Idcama, pacienteId } = req.body;
   if (!Idcama || !pacienteId) {
     return res.status(400).json({ message: 'Datos incompletos' });
@@ -83,6 +84,41 @@ router.get('/camas', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.render('camas', {camas: [], error: 'Error al cargar las camas'});
+  }
+});
+
+
+router.post('/asignar-cama', async (req, res) => {
+  console.log('Datos recibidos: ', req.body);
+  const { dni, idCama, tipoIngreso, sexo } = req.body;
+
+  if (!dni || !idCama || !tipoIngreso || !sexo) {
+    return res.status(400).json({ mensaje: 'Faltan datos obligatorios' });
+  }
+
+  try {
+    // Verificar que la cama no esté ocupada
+    const [asignaciones] = await conexion.query(
+      'SELECT * FROM internaciones WHERE id_cama = ? AND fecha_egreso IS NULL',
+      [idCama]
+    );
+
+    if (asignaciones.length > 0) {
+      return res.status(400).json({ mensaje: 'La cama ya está ocupada' });
+    }
+
+    await conexion.query(
+      'INSERT INTO internaciones (dni_pacientes, id_cama, tipo_ingreso, fecha_ingreso, sexo) VALUES (?, ?, ?, NOW(), ?)',
+      [dni, idCama, tipoIngreso, sexo]
+    );
+
+    await conexion.query('UPDATE camas SET estado = "ocupada" WHERE id = ?', [idCama]);
+
+    res.status(200).json({ mensaje: 'Asignación exitosa' });
+
+  } catch (error) {
+    console.error('Error al asignar cama:', error);
+    res.status(500).json({ mensaje: 'Error al asignar cama' });
   }
 });
 

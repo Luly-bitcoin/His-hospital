@@ -123,13 +123,13 @@ block content
         background: #d5f5e3; 
         }
       .cam.ocupada { 
-        background: #f5b7b1; 
+        background: red; 
         cursor: not-allowed;
         pointer-event: none;
         opacity: 0.6;
         }
       .cam.higienizando { 
-        background: #fcf3cf; 
+        background: yellow; 
         cursor: not-allowed;
         opacity: 0.6;
         }
@@ -161,12 +161,22 @@ block content
       button(name="higienizando") Camas Higienizando
       br
       .asignar-paciente
-        select#selectPaciente(name="pacienteid") 
-          option(value="") Seleccione un paciente
-          if paciente && pacientes.length 
-            each paciente in pacientes
-              option(value=pacientes.dni) #{pacientes.dni} - #{pacientes.nombre_completo}
-        button#btnAsignarPaciente Asignar
+
+          p Paciente seleccionado: 
+            br
+            strong #{pacientes.nombre} (DNI: #{pacientes.dni})
+
+          input(type="hidden", id="dniPaciente" value=pacientes.dni)
+          br
+
+          label(for="tipoIngreso") Tipo de ingreso:
+          select#tipoIngreso(name="tipoIngreso")
+            option(value="guardia") Guardia
+            option(value="emergencias") Emergencias 
+            option(value="derivacion-medica") Derivacion Medica 
+            option(value="cita-programada") Cita Programada
+
+          button#btnAsignarPaciente(type="button") Asignar
 
     .contenedor
       if alas && alas.length
@@ -180,9 +190,10 @@ block content
                   if hab.camas && hab.camas.length
                     .cam-container
                       each cama in hab.camas
-                        .cam(data-id=cama.id class=cama.estado_final title=`Cama ID: ${cama.id} - Estado: ${cama.estado_final}`)
-                          h2 #{cama.id}
-                          img(src="/img/cama.png", alt="Cama")
+                        - const claseCama = cama.estado === 'ocupada' ? 'cama.ocupada' : cama.estado === 'higienizando' ? 'cama.higienizando' : 'cama.libre'
+                          .cam(data-id=cama.id class=cama.estado title=`Cama ID: ${cama.id} - Estado: ${cama.estado}`)
+                            h2 #{cama.id}
+                            img(src="/img/cama.png", alt="Cama")
                   else
                     p No hay camas en esta habitación
             else
@@ -202,27 +213,9 @@ block content
   script.
     let camaSeleccionadaId = null;
 
-    function cargarPacientes() {
-      fetch('/pacientes/pacientes-disponibles')
-        .then(response => {
-          if (!response.ok) throw new Error('Error al obtener pacientes');
-          return response.json();
-        })
-        .then(pacientes => {
-          console.log("Pacientes recibidos: ", pacientes);
-          const select = $('#selectPaciente'); 
-          select.empty().append('<option value="">Seleccione un paciente</option>');
-          pacientes.forEach(p => {
-            select.append(`<option value="${p.dni}">${p.dni} - ${p.nombre_completo}</option>`);
-          });
-        })
-        .catch(error => {
-          console.error('Error al cargar pacientes:', error);
-          alert('No se pudo cargar la lista de pacientes.');
-        });
-    }
-
     $(document).ready(function () {
+      $('.asignar-paciente').hide()
+      
       $('.cam').on('click', function () {
         if ($(this).hasClass('ocupada') || $(this).hasClass('higienizando')) {
           alert('Esta cama no está disponible para asignar.');
@@ -231,36 +224,50 @@ block content
         $('.cam').removeClass('seleccionada');
         $(this).addClass('seleccionada');
         camaSeleccionadaId = $(this).data('id');
-        cargarPacientes();
+
         $('.asignar-paciente').show();
       });
 
       $('#btnAsignarPaciente').on('click', function () {
-        const pacienteId = $('#selectPaciente').val(); // pacienteId será el DNI
-        if (!camaSeleccionadaId || !pacienteId) {
-          alert('Seleccione una cama y un paciente');
+        if (!camaSeleccionadaId) {
+          alert('Seleccione una cama');
           return;
         }
 
-        fetch('/asignar-paciente', {
+        const dniPaciente = $('#dniPaciente').val();
+        const tipoIngreso = $('#tipoIngreso').val();
+
+        console.log('Datos para asignar: ', {
+          Idcama: camaSeleccionadaId,
+          pacienteId: dniPaciente,
+          tipoIngreso
+        });
+
+        fetch('/asignar-cama', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            Idcama: camaSeleccionadaId,
-            pacienteId: pacienteId
+            idCama: camaSeleccionadaId,
+            dni: dniPaciente,
+            tipoIngreso
           })
         })
-        .then(response => {
-          if (response.ok) {
-            alert('Paciente asignado con éxito');
+        .then(res => {
+          console.log('Respuesta HTTP: ', res.status);
+          return res.json();
+        })
+        .then(data => {
+          console.log('Respuesta JSON: ', data);
+          if (data.message || data.mensaje) {
+            alert(data.message || data.mensaje);
             location.reload();
           } else {
-            throw new Error('Error al asignar paciente');
+            alert('Error al asignar paciente' + (data.mensaje || res.statusText));
           }
         })
-        .catch(error => {
-          console.error(error);
-          alert('Hubo un problema al asignar el paciente.');
+        .catch(err => {
+          console.error(err);
+          alert('Error al asignar paciente, revisa la consola');
         });
       });
     });

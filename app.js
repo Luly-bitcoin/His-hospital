@@ -44,10 +44,12 @@ app.use('/medicos', medicosRoutes);
 
 app.get('/camas', async (req, res) =>{
   try{
+    const {dni, nombre} = req.query;
     const alas = await obtenerAlasConHabitacionesYCamas() || [];
-    const pacientes = await obtenerPacientesDisponibles() || [];
-    console.log('Pacientes enviado a la vista camas: ', pacientes);
-    res.render('camas', {alas, pacientes});
+    res.render('camas', {
+      alas, 
+      pacientes: dni && nombre ? {dni, nombre} : null
+    });
   }catch(error){
     console.error('Error al cargar camas', error);
     res.status(500).send('Error interno del servidor');
