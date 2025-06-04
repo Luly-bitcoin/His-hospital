@@ -4,13 +4,13 @@ import dotenv from 'dotenv';
 import {obtenerAlasConHabitacionesYCamas} from './models/camas.js';
 dotenv.config();
 
+
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Importación de rutas
 import { obtenerPacientesDisponibles } from './controllers/pacientes.controllers.js';
 import indexRoutes from './routes/index.routes.js';
 import medicosRoutes from './routes/medicos.routes.js';
@@ -18,29 +18,28 @@ import camasRoutes from './routes/camas.routes.js';
 import pacientesRoutes from './routes/pacientes.routes.js';
 import enfermeriaRoutes from './routes/enfermeria.routes.js';
 import { router as emergenciasRoutes } from './routes/emergencias.routes.js';
-
+import turnosRoutes from './routes/turnos.routes.js';
+import internacionesRoutes from './routes/internaciones.routes.js';
 
 const app = express();
 
-// Middleware para parsear JSON
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
-// Configuración del motor de vistas
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 
-// Archivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Rutas
 app.use('/', indexRoutes);
-app.use('/', medicosRoutes);
+app.use('/medicos', medicosRoutes);
 app.use('/camas', camasRoutes);
 app.use('/pacientes', pacientesRoutes);
 app.use('/enfermeria', enfermeriaRoutes);
 app.use('/emergencias', emergenciasRoutes);
-app.use('/medicos', medicosRoutes);
+app.use('/turnos', turnosRoutes);
+app.use('/internaciones', internacionesRoutes);
+
 
 app.get('/camas', async (req, res) =>{
   try{
@@ -66,8 +65,23 @@ router.get('/pacientes-disponibles', async (req, res) => {
   }
 });
 
+app.get('/asignar-cama', async (req, res) => {
+  try {
+    const { dni, nombre, sexo } = req.query;
+    const alas = await obtenerAlasConHabitacionesYCamas() || [];
+    res.render('asignar-cama', {
+      alas,
+      dniPaciente: dni,
+      nombre,
+      sexoPaciente: sexo
+    });
+  } catch (error) {
+    console.error('Error al cargar la vista de asignar cama:', error);
+    res.status(500).send('Error interno del servidor');
+  }
+});
 
-// Iniciar servidor
+
 app.listen(3000, () => {
   console.log('Servidor corriendo en http://localhost:3000');
 });

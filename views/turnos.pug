@@ -1,0 +1,128 @@
+extends layout
+
+block content
+  head
+    title Gestión de Turnos
+    link(rel="stylesheet", href="/css/style.css")
+    style.
+      body {
+        background: linear-gradient(to bottom, #7dbcff, rgba(255,255,255,0.8));
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 50px 0;
+      }
+      input, select {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+      .fila-dni input {
+        flex: 1;
+        margin-bottom: 0;
+      }
+      h2 {
+        margin-top: 10px;
+      }
+      a.cancelar-link {
+        color: red;
+        text-decoration: none;
+        font-weight: bold;
+      }
+      a.cancelar-link:hover {
+        text-decoration: underline;
+      }
+      .fila-dni {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .final.dni .boton {
+        white-space: nowrap;
+        padding: 8px 16px;
+        height: 100%;
+      }
+  .contenedor
+    img.logo-flotante(src="/img/logo.png", alt="Logo")
+    br
+    br
+    h2 Gestión de Turnos
+    form(action="/turnos/agendar" method="POST")
+      label(for="dni_paciente") DNI Paciente:
+      .fila-dni
+        select#dni_paciente(name="dni_paciente")
+          option(value="") Seleccione DNI
+          each p in pacientes 
+            option(value=p.dni)= p.dni 
+
+      label(for="nombre_paciente") Nombre del paciente:
+      input#nombre_paciente(name="nombre_paciente", readonly)
+
+      label(for="obra_social") Obra Social:
+      input#obra_social(name="obra_social", readonly)
+
+      label(for="telefono_contacto") Teléfono:
+      input#telefono_contacto(name="telefono_contacto", readonly)
+
+      label(for="dni_medico") Médico:
+      select(name="dni_medico" id="dni_medico" required)
+        option(value="" disabled selected) Seleccione un médico 
+        each medico in medicos
+          option(value=medico.dni)= medico.nombre
+
+      label(for="nombre_medico") Nombre del médico:
+      input#nombre_medico(name="nombre_medico", readonly)
+
+      label(for="especialidad") Especialidad:
+      input#especialidad(name="especialidad", readonly)
+
+      label(for="motivo") Motivo del turno:
+      input(type="text", id="motivo", name="motivo", placeholder="Ej: Consulta general", required)
+
+      label(for="hora_turno") Hora:
+      input(type="time", id="hora_turno", name="hora_turno", required)
+
+      label(for="fecha_turno") Fecha:
+      input(type="date", id="fecha_turno", name="fecha_turno", required)
+
+      label(for="estado") Estado: 
+      select(name="estado" id="estado" required)  
+        option(value="") Seleccione un estado 
+        option(value="pendiente") Pendiente
+        option(value="confirmado") Confirmado
+        option(value="asistido") Asistido 
+        option(value="recuperado") Recuperado
+        option(value="cancelado") Cancelado
+
+      label(for="tipo_turno") Tipo de turno: 
+      select(name="tipo_turno" id="tipo_turno" required)
+        option(value="" disabled selected) Seleccione un tipo de turno 
+        option(value="consulta") Consulta 
+        option(value="seguimiento") Seguimiento
+
+      button(type="submit" class="boton") Agendar Turno
+      button(type="button" class="boton" onclick="window.history.back()") Cancelar
+
+  script.
+    document.getElementById("dni_paciente").addEventListener("change", function() {
+      const dni = this.value;
+      if(!dni) return;
+      fetch(`/api/pacientes/${dni}`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("nombre_paciente").value = data.nombre_completo;
+          document.getElementById("obra_social").value = data.obra_social;
+          document.getElementById("telefono_contacto").value = data.telefono;
+        })
+        .catch(() => alert("Paciente no encontrado"));
+    });
+
+    document.getElementById("dni_medico").addEventListener("change", function() {
+      const dni = this.value;
+      fetch(`/medicos/${dni}`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("nombre_medico").value = data.nombre;
+          document.getElementById("especialidad").value = data.especialidad;
+        })
+        .catch(() => alert("Médico no encontrado"));
+    });

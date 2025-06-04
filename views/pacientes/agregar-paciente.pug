@@ -102,20 +102,21 @@ block content
               option(value="F") Femenino
             #errorSexo.error-message
 
-        button(type="button", class="boton", onclick="redirigirACamas()") Asignarle Cama
+        button(type="button", class="boton", onclick="asignarCama()") Asignarle Cama
         button(type="submit", class="boton", onclick="validarFormulario(event)") Registrar Paciente
         button(type="submit", class="boton", onclick="limpiar") Limpiar
   script(src="/js/agregar-paciente.js")
-  script. 
-    function redirigirACamas() {
+  script.
+    function asignarCama() {
     const dni = document.getElementById('dni').value;
     const nombre = document.getElementById('nombre_completo').value;
+    const sexo = document.getElementById('sexo').value;
 
-    if (!dni || !nombre) {
-      alert("Por favor completá el DNI y el nombre del paciente.");
+    if (!dni || !nombre || !sexo) {
+      alert('Complete los datos básicos para asignar cama');
       return;
     }
-
-    const url = `/camas?dni=${encodeURIComponent(dni)}&nombre=${encodeURIComponent(nombre)}`;
+    
+    const url = `/asignar-cama?dni=${encodeURIComponent(dni)}&nombre=${encodeURIComponent(nombre)}&sexo=${encodeURIComponent(sexo)}`;
     window.location.href = url;
     }

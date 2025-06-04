@@ -4,13 +4,13 @@ import { conexion } from '../config/db.js';
 const router = express.Router();
 
 // Vista principal de médicos
-router.get("/medicos", (req, res) => res.render("medicos/medicos"));
+router.get("/", (req, res) => res.render("medicos/medicos"));
 
 // Vista para agregar médico
-router.get("/medicos/agregar-medico", (req, res) => res.render("medicos/agregar-medico"));
+router.get("/agregar-medico", (req, res) => res.render("medicos/agregar-medico"));
 
 // Vista para editar médico
-router.get("/medicos/editar/:dni", (req, res) => res.render("medicos/editar-medico"));
+router.get("/editar/:dni", (req, res) => res.render("medicos/editar-medico"));
 
 // Obtener médicos en formato JSON
 router.get("/medicos-json", async (req, res) => {
@@ -70,5 +70,26 @@ router.put("/api/medicos/:dni", async (req, res) => {
     res.status(500).json({ message: "Error interno al actualizar médico" });
   }
 });
+
+router.get("/:dni", async (req, res) => {
+  const dni = req.params.dni;
+  console.log("Buscando medico con dni: ", dni);
+  try {
+    const [rows] = await conexion.execute(`
+      SELECT dni, nombre, correo, sexo, matricula, especialidad
+      FROM medicos
+      WHERE dni = ? 
+    `, [dni]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Médico no encontrado" });
+    }
+    res.json(rows[0]);
+  } catch (error) {
+    console.error("Error al obtener médico:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
+});
+
 
 export default router;

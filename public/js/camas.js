@@ -5,28 +5,39 @@ document.querySelectorAll('.cama-libre').forEach(cama => {
     document.querySelectorAll('.cama-libre').forEach(c => c.classList.remove('seleccionada'));
     cama.classList.add('seleccionada');
 
-    camaSeleccionada = cama.dataset.id;
+    camaSeleccionada = {
+      id: cama.dataset.id,
+      sexo: cama.dataset.sexo,         
+      ala: cama.dataset.ala,
+      habitacion: cama.dataset.habitacion
+    };
   });
 });
 
 document.getElementById('btnAsignarPaciente').addEventListener('click', async () => {
-  const dniPaciente = document.getElementById('dniPaciente').value;
+  const pacienteId = document.getElementById('dniPaciente').value;
+  const sexo = document.getElementById('sexoPaciente').value; // ← Asegurate de tener este campo
 
-  if (!camaSeleccionada || !dniPaciente) {
+  if (!camaSeleccionada || !pacienteId) {
     alert('Seleccione un paciente y una cama');
     return;
   }
 
-  const response = await fetch('/asignar-cama', {
+  const fechaIngreso = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+  const response = await fetch('/internaciones/asignar', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      dni: dniPaciente,
-      idCama: camaSeleccionada,
-      tipoIngreso: 'normal', 
-      sexo: '', 
+      pacienteId,
+      camaId: camaSeleccionada.id,
+      tipo_ingreso: 'normal',
+      fecha_ingreso: fechaIngreso,
+      ala: camaSeleccionada.ala,
+      habitacion: camaSeleccionada.habitacion,
+      sexo: sexo
     }),
   });
 
@@ -35,6 +46,6 @@ document.getElementById('btnAsignarPaciente').addEventListener('click', async ()
     alert('Paciente asignado correctamente');
     location.reload();
   } else {
-    alert('Error al asignar paciente: ' + result.mensaje);
+    alert('Error al asignar paciente: ' + (result.error || result.mensaje));
   }
 });

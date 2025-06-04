@@ -1,0 +1,111 @@
+extends layout
+
+block content
+  head
+    title Asignar Cama
+    link(rel="stylesheet", href="/css/style.css")
+    style.
+      body {
+        font-family: 'Segoe UI', sans-serif;
+        background: linear-gradient(to bottom, #7dbcff, rgba(255,255,255,0.8)), url('/img/hospital2.jpg');
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: center;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 40px 0;
+      }
+      select {
+        width: 100%;
+      }
+      .input-group {
+        margin-bottom: 15px;
+      }
+
+  .contenedor
+    img.logo-flotante(src="/img/logo.png", alt="Logo")
+    br
+    br
+    .formulario-box
+      h1 Asignar cama a paciente
+      p Paciente: #{nombre} (DNI: #{dni}), Sexo: #{sexo}
+
+      form(id="asignarCamaForm", method="POST", action="/internaciones/asignar")
+        .input-group
+          label(for="tipo_ingreso") Tipo de Ingreso
+          select(name="tipo_ingreso", id="tipo_ingreso", required)
+            option(value="") Seleccionar
+            option(value="guardia") Guardia
+            option(value="derivacion-medica") Derivacion Medica 
+            option(value="cita-programada") Cita Programada 
+            option(value="emergencias") Emergencias 
+
+        .input-group
+          label(for="fecha_ingreso") Fecha de Ingreso
+          input(type="datetime-local", id="fecha_ingreso", name="fecha_ingreso", required, value=new Date().toISOString().slice(0,16))
+
+        .input-group
+          label(for="ala") Seleccionar Ala
+          select#selectAla(name="ala", required)
+            option(value="") Seleccionar Ala
+            each ala in alas 
+                option(value=ala.id) #{ala.nombre}
+
+        .input-group
+          label(for="habitacion") Seleccionar Habitación
+          select#selectHabitacion(name="habitacion", disabled, required)
+            option(value="") Primero seleccione un Ala
+
+        .input-group
+          label(for="cama") Seleccionar Cama
+          select#selectCama(name="camaId", disabled, required)
+            option(value="") Primero seleccione una Habitación
+
+        input(type="hidden", name="pacienteId", id="pacienteId", value=dniPaciente)
+        input(type="hidden", name="sexo", value=sexoPaciente)
+
+        button#btnAsignar(type="submit", class="boton") Asignar Cama
+    
+    script.
+        document.addEventListener('DOMContentLoaded', () => {
+        const selectAla = document.getElementById('Ala');
+        const selectHabitacion = document.getElementById('Habitacion');
+
+        selectAla.addEventListener('change', () => {
+            const alaId = selectAla.value;
+            if (!alaId) {
+            selectHabitacion.innerHTML = '<option value="">Seleccionar habitación</option>';
+            return;
+            }
+
+            // Llamar a la API para traer las habitaciones del ala seleccionada
+            fetch(`/api/habitaciones?alaId=${alaId}`)
+            .then(response => {
+                if (!response.ok) throw new Error('Error al obtener habitaciones');
+                return response.json();
+            })
+            .then(habitaciones => {
+                // Limpiar y llenar el select de habitaciones
+                selectHabitacion.innerHTML = '';
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = 'Seleccionar habitación';
+                selectHabitacion.appendChild(defaultOption);
+
+                habitaciones.forEach(habitacion => {
+                const option = document.createElement('option');
+                option.value = habitacion.id;
+                option.textContent = `Habitación ${habitacion.id} (Capacidad: ${habitacion.capacidad})`;
+                selectHabitacion.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error al cargar habitaciones:', error);
+                alert('Ocurrió un error al cargar habitaciones.');
+            });
+        });
+        });
+
+   

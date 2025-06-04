@@ -149,6 +149,24 @@ block content
       .asignar-paciente select{
         width: 100%;
       }
+      .habitaciones-emergencias{
+        display: flex;
+        justify-content: space-around;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+        padding: 15px;
+        margin-bottom: 20px;
+      }
+      .habitaciones-emergencias .habitaciones{
+        box-shadow: 0 0 0;
+      }
+      .menu button.activo {
+        background-color: #3498db;
+        color: white;
+        font-weight: bold;
+      }
+
   header
     img(src="/img/logo.png", alt="Logo del Hospital" )
     h1 Gestión de Camas
@@ -156,118 +174,84 @@ block content
   .camas
     .menu
       button(name="todos") Todas las camas
-      button(name="libres") Camas Libres
-      button(name="ocupadas") Camas Ocupadas
+      button(name="libre") Camas Libres
+      button(name="ocupada") Camas Ocupadas
       button(name="higienizando") Camas Higienizando
+      button(name="emergencias") Camas de Emergencias
       br
-      .asignar-paciente
-
-          p Paciente seleccionado: 
-            br
-            strong #{pacientes.nombre} (DNI: #{pacientes.dni})
-
-          input(type="hidden", id="dniPaciente" value=pacientes.dni)
-          br
-
-          label(for="tipoIngreso") Tipo de ingreso:
-          select#tipoIngreso(name="tipoIngreso")
-            option(value="guardia") Guardia
-            option(value="emergencias") Emergencias 
-            option(value="derivacion-medica") Derivacion Medica 
-            option(value="cita-programada") Cita Programada
-
-          button#btnAsignarPaciente(type="button") Asignar
-
     .contenedor
       if alas && alas.length
         each ala in alas
-          .alas
-            h1 Ala #{ala.nombre}
-            if ala.habitaciones && ala.habitaciones.length
-              each hab in ala.habitaciones
-                .habitaciones
-                  h2 Habitación #{hab.id}
-                  if hab.camas && hab.camas.length
-                    .cam-container
-                      each cama in hab.camas
-                        - const claseCama = cama.estado === 'ocupada' ? 'cama.ocupada' : cama.estado === 'higienizando' ? 'cama.higienizando' : 'cama.libre'
-                          .cam(data-id=cama.id class=cama.estado title=`Cama ID: ${cama.id} - Estado: ${cama.estado}`)
-                            h2 #{cama.id}
-                            img(src="/img/cama.png", alt="Cama")
-                  else
-                    p No hay camas en esta habitación
-            else
-              p No hay habitaciones en esta ala
-      else
-        p No hay alas para mostrar
+          if ala.nombre.toLowerCase() !== 'emergencias'
+            .alas
+              h1 Ala #{ala.nombre}
+              if ala.habitaciones && ala.habitaciones.length
+                each hab in ala.habitaciones
+                  .habitaciones
+                    h2 Habitación #{hab.id}
+                    if hab.camas && hab.camas.length
+                      .cam-container
+                        each cama in hab.camas
+                          - const claseCama = cama.estado === 'ocupada' ? 'cama.ocupada' : cama.estado === 'higienizando' ? 'cama.higienizando' : 'cama.libre'
+                            .cam(data-id=cama.id data-estado=cama.estado.toLowerCase().trim() class=cama.estado.toLowerCase().trim() title=`Cama ID: ${cama.id} - Estado: ${cama.estado}`)
+                              h2 #{cama.id}
+                              img(src="/img/cama.png", alt="Cama")
+                    else
+                      p No hay camas en esta habitación
+              else
+                p No hay habitaciones en esta ala
+        else
+          p No hay alas para mostrar
 
-    section.emergencias
-      h1 Camas de Emergencia
-      .cam-container(style="justify-content:center;gap:24px;")
-        each e in ['E-1', 'E-2', 'E-3']
-          .cam(data-id=`emergencia-${e}`)
-            h2 #{e}
-            img(src="/img/cama.png", alt="Cama emergencia")
-
+        - const alaEmergencias  =alas.find(a => a.nombre.toLowerCase() === 'emergencias')
+        if alaEmergencias 
+          .emergencias 
+            h1 Emergencias 
+            if alaEmergencias.habitaciones && alaEmergencias.habitaciones.length 
+              .habitaciones-emergencias
+                each hab in alaEmergencias.habitaciones 
+                  .habitaciones
+                    h2 Habitacion #{hab.id}
+                    if hab.camas && hab.camas.length 
+                      .cam-container 
+                        each cama in hab.camas 
+                          - const claseCama = cama.estado === 'ocupada' ? 'ocupada' : cama.estado === 'higienizando' ? 'higienizando' : 'libre'
+                            .cam(class=claseCama data-id=cama.id data-estado=cama.estado.toLowerCase().trim() title=`Cama ID: ${cama.id} - Estado: ${cama.estado}`)
+                              h2 #{cama.id}
+                              img(src="/img/cama.png", alt="cama")
+                    else 
+                      p No hay camas en esta habitacion 
+            else 
+              p No hay habitaciones de Emergencias
 
   script.
-    let camaSeleccionadaId = null;
+    const botones = document.querySelectorAll('.menu button');
+    const camas = document.querySelectorAll('.cam');
+    const habitaciones = document.querySelectorAll('.habitaciones');
 
-    $(document).ready(function () {
-      $('.asignar-paciente').hide()
-      
-      $('.cam').on('click', function () {
-        if ($(this).hasClass('ocupada') || $(this).hasClass('higienizando')) {
-          alert('Esta cama no está disponible para asignar.');
-          return;
-        }
-        $('.cam').removeClass('seleccionada');
-        $(this).addClass('seleccionada');
-        camaSeleccionadaId = $(this).data('id');
+    botones.forEach(btn => {
+      btn.addEventListener('click', () => {
+        botones.forEach(b => b.classList.remove('activo'));
+        btn.classList.add('activo');
 
-        $('.asignar-paciente').show();
-      });
+        const filtro = btn.name; 
 
-      $('#btnAsignarPaciente').on('click', function () {
-        if (!camaSeleccionadaId) {
-          alert('Seleccione una cama');
-          return;
-        }
+        camas.forEach(cama => {
+          const estado = cama.dataset.estado;
 
-        const dniPaciente = $('#dniPaciente').val();
-        const tipoIngreso = $('#tipoIngreso').val();
-
-        console.log('Datos para asignar: ', {
-          Idcama: camaSeleccionadaId,
-          pacienteId: dniPaciente,
-          tipoIngreso
+          if (filtro === 'todos') {
+            cama.style.display = '';
+          } else if (filtro === 'emergencias') {
+            const esEmergencia = cama.closest('.emergencias');
+            cama.style.display = esEmergencia ? '' : 'none';
+          } else {
+            cama.style.display = estado === filtro ? '' : 'none';
+          }
         });
 
-        fetch('/asignar-cama', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            idCama: camaSeleccionadaId,
-            dni: dniPaciente,
-            tipoIngreso
-          })
-        })
-        .then(res => {
-          console.log('Respuesta HTTP: ', res.status);
-          return res.json();
-        })
-        .then(data => {
-          console.log('Respuesta JSON: ', data);
-          if (data.message || data.mensaje) {
-            alert(data.message || data.mensaje);
-            location.reload();
-          } else {
-            alert('Error al asignar paciente' + (data.mensaje || res.statusText));
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          alert('Error al asignar paciente, revisa la consola');
+        habitaciones.forEach(hab => {
+          const camasVisibles = hab.querySelectorAll('.cam:not([style*="display: none"])');
+          hab.style.display = camasVisibles.length ? '' : 'none';
         });
       });
     });

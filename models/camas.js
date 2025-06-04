@@ -1,15 +1,15 @@
 import { conexion as pool } from '../config/db.js';
 
-
 export async function obtenerAlasConHabitacionesYCamas() {
   const [alas] = await pool.query('SELECT id, nombre FROM alas ORDER BY nombre');
+  console.log('Alas:', alas);
 
   for (const ala of alas) {
-const [habitaciones] = await pool.query(
-  'SELECT id, capacidad FROM habitaciones WHERE ala_id = ? ORDER BY id',
-  [ala.id]
-);
-
+    const [habitaciones] = await pool.query(
+      'SELECT id, capacidad FROM habitaciones WHERE ala_id = ? ORDER BY id',
+      [ala.id]
+    );
+    console.log(`Habitaciones para ala ${ala.id}:`, habitaciones);
 
     for (const hab of habitaciones) {
       const [camas] = await pool.query(`
@@ -25,7 +25,7 @@ const [habitaciones] = await pool.query(
         WHERE c.habitacion_id = ?
         ORDER BY c.id
       `, [hab.id]);
-
+      console.log(`Camas para habitación ${hab.id}:`, camas);
       hab.camas = camas;
     }
 
