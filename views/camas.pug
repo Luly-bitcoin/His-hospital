@@ -233,35 +233,94 @@ block content
               p No hay habitaciones de Emergencias
 
   script.
-    const botones = document.querySelectorAll('.menu button');
-    const camas = document.querySelectorAll('.cam');
-    const habitaciones = document.querySelectorAll('.habitaciones');
+    document.addEventListener('DOMContentLoaded', () => {
+      const selectAla = document.getElementById('selectAla');
+      const selectHabitacion = document.getElementById('selectHabitacion');
+      const selectCama = document.getElementById('selectCama');
+      const sexoPaciente = '#{sexoPaciente}';
 
-    botones.forEach(btn => {
-      btn.addEventListener('click', () => {
-        botones.forEach(b => b.classList.remove('activo'));
-        btn.classList.add('activo');
+      selectHabitacion.disabled = true;
+      selectCama.disabled = true;
 
-        const filtro = btn.name; 
+      selectAla.addEventListener('change', () => {
+        const alaId = selectAla.value;
+        selectHabitacion.innerHTML = '<option value="">Primero seleccione un Ala</option>';
+        selectHabitacion.disabled = true;
 
-        camas.forEach(cama => {
-          const estado = cama.dataset.estado;
+        selectCama.innerHTML = '<option value="">Primero seleccione una Habitación</option>';
+        selectCama.disabled = true;
 
-          if (filtro === 'todos') {
-            cama.style.display = '';
-          } else if (filtro === 'emergencias') {
-            const esEmergencia = cama.closest('.emergencias');
-            cama.style.display = esEmergencia ? '' : 'none';
-          } else {
-            cama.style.display = estado === filtro ? '' : 'none';
-          }
-        });
+        if (!alaId) return;
 
-        habitaciones.forEach(hab => {
-          const camasVisibles = hab.querySelectorAll('.cam:not([style*="display: none"])');
-          hab.style.display = camasVisibles.length ? '' : 'none';
-        });
+        fetch(`/api/habitaciones?alaId=${alaId}`)
+          .then(res => res.json())
+          .then(habitaciones => {
+            if(habitaciones.length === 0){
+              selectHabitacion.innerHTML = '<option value="">No hay habitaciones en este ala</option>';
+              return;
+            }
+            selectHabitacion.disabled = false;
+            selectHabitacion.innerHTML = '<option value="">Seleccionar habitación</option>';
+
+            habitaciones.forEach(hab => {
+              // Solo mostrar el ID de la habitación
+              const option = document.createElement('option');
+              option.value = hab.id;
+              option.textContent = `Habitación ${hab.id}`;
+              selectHabitacion.appendChild(option);
+            });
+          })
+          .catch(() => alert('Error al cargar habitaciones'));
       });
+
+      selectHabitacion.addEventListener('change', () => {
+        const habitacionId = selectHabitacion.value;
+        selectCama.innerHTML = '<option value="">Primero seleccione una Habitación</option>';
+        selectCama.disabled = true;
+
+        if (!habitacionId) return;
+
+        // Traemos camas libres y camas ocupadas para verificar sexo
+        fetch(`/api/camas?habitacionId=${habitacionId}`)
+          .then(res => res.json())
+          .then(camas => {
+            const camasLibres = camas.filter(cama => cama.estado === 'libre');
+            const camasOcupadas = camas.filter(cama => cama.estado !== 'libre');
+
+            // Verificar si hay cama ocupada y el sexo del paciente que está
+            let sexoOcupante = null;
+            if(camasOcupadas.length > 0){
+              sexoOcupante = camasOcupadas[0].sexoPaciente; // asumimos que el backend devuelve sexoPaciente
+            }
+
+            // Validar sexo
+            if(sexoOcupante && sexoOcupante !== sexoPaciente){
+              alert(`No se puede asignar paciente de sexo ${sexoPaciente} a habitación con ocupante de sexo ${sexoOcupante}`);
+              selectCama.innerHTML = '<option value="">No se pueden asignar camas por diferencia de sexo</option>';
+              selectCama.disabled = true;
+              return;
+            }
+
+            if(camasLibres.length === 0){
+              selectCama.innerHTML = '<option value="">No hay camas libres en esta habitación</option>';
+              selectCama.disabled = true;
+              return;
+            }
+
+            selectCama.disabled = false;
+            selectCama.innerHTML = '<option value="">Seleccionar cama</option>';
+
+            camasLibres.forEach(cama => {
+              const option = document.createElement('option');
+              option.value = cama.id;
+              option.textContent = `Cama ${cama.id}`;
+              selectCama.appendChild(option);
+            });
+
+          })
+          .catch(() => alert('Error al cargar camas'));
+      });
+
     });
 
     async function chequearLimpieza() {

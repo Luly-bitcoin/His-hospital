@@ -47,6 +47,37 @@ router.get('/disponibles', async (req, res) => {
 //  }
 //});
 
+export const mostrarAsignarCama = async (req, res) => {
+  try {
+    const dniPaciente = req.params.dni; // lo recibes por URL o query param
+
+    // Traer paciente por DNI
+    const [pacientes] = await conexion.execute(
+      'SELECT dni, nombre_completo AS nombre, sexo FROM pacientes WHERE dni = ?',
+      [dniPaciente]
+    );
+
+    if (pacientes.length === 0) {
+      return res.status(404).send('Paciente no encontrado');
+    }
+
+    // Traer alas
+    const [alas] = await conexion.execute('SELECT id, nombre FROM alas');
+
+    res.render('internaciones/asignar-cama', {
+      nombre: pacientes[0].nombre,
+      dni: pacientes[0].dni,
+      sexo: pacientes[0].sexo,
+      dniPaciente: pacientes[0].dni,
+      sexoPaciente: pacientes[0].sexo,
+      alas,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error interno');
+  }
+};
+
 router.get('/:dni', async (req, res) => {
   const dni = req.params.dni;
   try {

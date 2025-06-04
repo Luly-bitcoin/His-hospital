@@ -7,10 +7,10 @@ block content
     style.
       body {
         font-family: 'Segoe UI', sans-serif;
-        background: linear-gradient(to bottom, #7dbcff, rgba(255,255,255,0.8)), url('/img/hospital2.jpg'), url('/img/hospital .jpg'), url('/img/hospital3.jpg');
+        background: linear-gradient(to bottom, #7dbcff, rgba(255,255,255,0.8)), url('/img/hospital3.jpg');
         background-repeat: no-repeat;
-        background-size: cover, 33.33% 100%, 33.33% 100%, 33.33% 100%;
-        background-position: center, left, center, right;
+        background-size: cover;
+        background-position: center;
         margin: 0;
         display: flex;
         justify-content: center;
@@ -22,22 +22,10 @@ block content
         padding: 30px;
         border-radius: 12px;
         box-shadow: 0 0 15px rgba(0,0,0,0.3);
-        width: 350px;
+        width: 500px;
       }
-      label {
-        display: block;
-        margin-top: 15px;
-        font-weight: 600;
-        color: #333;
-      }
-      input, select {
-        width: 100%;
-        padding: 8px 12px;
-        margin-top: 6px;
-        border: 1.5px solid #7dbcff;
-        border-radius: 6px;
-        font-size: 16px;
-      }
+
+
       button {
         margin-top: 25px;
         background-color: #1a73e8;
@@ -53,30 +41,17 @@ block content
       button:hover {
         background-color: #155ab6;
       }
-      .toast {
-        visibility: hidden;
-        min-width: 250px;
-        margin-left: -125px;
-        background-color: #333;
-        color: #fff;
+      h1{
         text-align: center;
-        border-radius: 8px;
-        padding: 16px;
-        position: fixed;
-        z-index: 1000;
-        left: 50%;
-        bottom: 30px;
-        font-size: 16px;
-        opacity: 0;
-        transition: opacity 0.5s, bottom 0.5s;
+        font-size: 5vh;
       }
-      .toast.show {
-        visibility: visible;
-        opacity: 1;
-        bottom: 50px;
+      .logo-flotante{
+        top: 5px;
       }
-  
   .formulario-box
+    img.logo-flotante(src="/img/logo.png", alta="logo")
+    br
+    br
     h1 Crear Usuario
     form(action="/registrar", method="POST")
       label(for="username") Nombre de Usuario:
