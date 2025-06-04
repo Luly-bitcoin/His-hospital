@@ -4,6 +4,21 @@ import dotenv from 'dotenv';
 import {obtenerAlasConHabitacionesYCamas} from './models/camas.js';
 dotenv.config();
 
+import session from 'express-session';
+const app = express();
+
+app.use(express.urlencoded({ extended: true })); 
+app.use(session({
+  secret: 'un-secreto-muy-seguro', 
+  resave: false,
+  saveUninitialized: false,
+}));
+app.use((req, res, next) => {
+  if (req.session.user) {
+    req.user = req.session.user;
+  }
+  next();
+});
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -11,6 +26,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+import authRoutes from './routes/auth.routes.js';
 import { obtenerPacientesDisponibles } from './controllers/pacientes.controllers.js';
 import indexRoutes from './routes/index.routes.js';
 import medicosRoutes from './routes/medicos.routes.js';
@@ -21,8 +37,6 @@ import { router as emergenciasRoutes } from './routes/emergencias.routes.js';
 import turnosRoutes from './routes/turnos.routes.js';
 import internacionesRoutes from './routes/internaciones.routes.js';
 
-const app = express();
-
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
@@ -30,6 +44,17 @@ app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+
+app.use('/', authRoutes);
+app.use((req, res, next)=>{
+  const publicRoutes = ['/login', '/registrar', '/css/', '/js/'];
+  if(!req.session.user && !publicRoutes.some(r => req.url.startsWith(r))){
+    return res.redirect('/login');
+  }
+  next();
+});
+
 
 app.use('/', indexRoutes);
 app.use('/medicos', medicosRoutes);
@@ -47,7 +72,8 @@ app.get('/camas', async (req, res) =>{
     const alas = await obtenerAlasConHabitacionesYCamas() || [];
     res.render('camas', {
       alas, 
-      pacientes: dni && nombre ? {dni, nombre} : null
+      pacientes: dni && nombre ? {dni, nombre} : null,
+      user: req.user
     });
   }catch(error){
     console.error('Error al cargar camas', error);

@@ -1,3 +1,11 @@
+import express from 'express';
+import {checkLimpieza, confirmarLimpieza} from '../controllers/camas.controllers.js';
+
+const router = express.Router();
+
+router.get('/notificaciones/limpieza', checkLimpieza);
+router.post('/notificaciones/limpieza/confirmar', confirmarLimpieza);
+
 let camaSeleccionada = null;
 
 document.querySelectorAll('.cama-libre').forEach(cama => {
@@ -49,3 +57,5 @@ document.getElementById('btnAsignarPaciente').addEventListener('click', async ()
     alert('Error al asignar paciente: ' + (result.error || result.mensaje));
   }
 });
+
+export default router;

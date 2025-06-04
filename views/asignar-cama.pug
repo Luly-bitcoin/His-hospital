@@ -69,43 +69,45 @@ block content
         button#btnAsignar(type="submit", class="boton") Asignar Cama
     
     script.
-        document.addEventListener('DOMContentLoaded', () => {
-        const selectAla = document.getElementById('Ala');
-        const selectHabitacion = document.getElementById('Habitacion');
+        const selectCama = document.getElementById('selectCama');
+        const selectHabitacion = document.getElementById('selectHabitacion');
 
-        selectAla.addEventListener('change', () => {
-            const alaId = selectAla.value;
-            if (!alaId) {
-            selectHabitacion.innerHTML = '<option value="">Seleccionar habitación</option>';
+        selectHabitacion.addEventListener('change', () => {
+          const habitacionId = selectHabitacion.value;
+          if (!habitacionId) {
+            selectCama.innerHTML = '<option value="">Primero seleccione una Habitación</option>';
+            selectCama.disabled = true;
             return;
-            }
+          }
 
-            // Llamar a la API para traer las habitaciones del ala seleccionada
-            fetch(`/api/habitaciones?alaId=${alaId}`)
-            .then(response => {
-                if (!response.ok) throw new Error('Error al obtener habitaciones');
-                return response.json();
-            })
-            .then(habitaciones => {
-                // Limpiar y llenar el select de habitaciones
-                selectHabitacion.innerHTML = '';
+          fetch(`/api/camas?habitacionId=${habitacionId}&estado=libre`)
+            .then(res => res.json())
+            .then(camas => {
+              selectCama.innerHTML = '';
+              if(camas.length === 0) {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = 'No hay camas libres';
+                selectCama.appendChild(option);
+                selectCama.disabled = true;
+              } else {
                 const defaultOption = document.createElement('option');
                 defaultOption.value = '';
-                defaultOption.textContent = 'Seleccionar habitación';
-                selectHabitacion.appendChild(defaultOption);
+                defaultOption.textContent = 'Seleccionar cama';
+                selectCama.appendChild(defaultOption);
 
-                habitaciones.forEach(habitacion => {
-                const option = document.createElement('option');
-                option.value = habitacion.id;
-                option.textContent = `Habitación ${habitacion.id} (Capacidad: ${habitacion.capacidad})`;
-                selectHabitacion.appendChild(option);
+                camas.forEach(cama => {
+                  const option = document.createElement('option');
+                  option.value = cama.id;
+                  option.textContent = `Cama ${cama.id}`;
+                  selectCama.appendChild(option);
                 });
+                selectCama.disabled = false;
+              }
             })
-            .catch(error => {
-                console.error('Error al cargar habitaciones:', error);
-                alert('Ocurrió un error al cargar habitaciones.');
+            .catch(err => {
+              console.error(err);
+              alert('Error al cargar camas');
             });
         });
-        });
 
-   

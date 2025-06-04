@@ -1,6 +1,10 @@
 import express from 'express';
 const router = express.Router();
 import emergenciasController from '../controllers/emergencias.controllers.js';
+import { permitirRoles } from '../middlewares/auth.middleware.js';
+
+
+router.get('/emergencias', permitirRoles, emergenciasController.getIngresoEmergencia);
 
 router.get('/', emergenciasController.getIngresoEmergencia);
 

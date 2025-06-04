@@ -1,8 +1,11 @@
 import express from 'express';
 import { conexion } from '../config/db.js'; 
+import {permitirRoles, checkRole} from '../middlewares/auth.middleware.js';
+import medicosControllers from '../controllers/medicos.controllers.js';
 
 const router = express.Router();
 
+router.get('/medico', permitirRoles, checkRole('medico'), medicosControllers.mostrarVistaMedico);
 // Vista principal de médicos
 router.get("/", (req, res) => res.render("medicos/medicos"));
 

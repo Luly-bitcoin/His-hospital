@@ -11,6 +11,8 @@ html(lang="es")
       .logo-titulo
         img.logo(src="img/logo.png" alt="logo")
         h1 Hospital Central
+        if user.rol === 'limpieza'
+          button#notificacion(style="animation: parpadeo 1s infinite") Limpieza pendiente
       nav
         ul
           li
@@ -40,3 +42,11 @@ html(lang="es")
 
     footer
       p &copy; 2025 Hospital Central. Todos los derechos reservados a @Maria Lourdes Villegas
+
+  script.
+    const btn = document.getElementId('notificacion');
+    btn.addEventListener('click', () => {
+      if(confirm('Limpieza necesaria')){
+        window.location.href = '/camas';
+      }
+    });

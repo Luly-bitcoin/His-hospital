@@ -1,28 +1,37 @@
 import express from 'express';
 const router = express.Router();
+import {requireLogin, permitirRoles} from '../middlewares/auth.middleware.js';
 
-router.get('/', (req, res) => {
-  res.render('index');
+router.get('/', requireLogin, permitirRoles('admisión', 'limpieza', 'medico'), (req, res) => { 
+  res.render('index', {user: req.user});
+});
+router.get('/login', (req, res)=>{
+  res.render('login');
 });
 
-router.get('/pacientes/nuevo', (req, res) => {
-  res.render('pacientes/agregar-paciente');
+router.get('/agregar-paciente', permitirRoles('admisión'), (req, res) => { 
+  res.render('agregar-paciente');
 });
 
-router.get('/pacientes', (req, res) => {
-  res.render('pacientes/lista');
+router.get('/camas', permitirRoles('limpieza', 'admisión'), (req, res) => {
+  res.render('camas');
 });
 
-router.get('/medicos/medicos', (req, res) => {
-  res.render('medicos/medicos');
+// Rutas para medico
+router.get('/medicos', permitirRoles('medico'), (req, res) => {
+  res.render('medicos');
 });
-
-router.get('/medicos/agregar-medico', (req, res) => {
-  res.render('medicos/agregar-medico');
+router.get('/agregar-medico', permitirRoles('medico'), (req, res) => {
+  res.render('agregar-medico');
 });
-
-router.get('/admin', (req, res) => {
-  res.render('layout'); 
+router.get('/editar-medico', permitirRoles('medico'), (req, res) => {
+  res.render('editar-medico');
+});
+router.get('/lista', permitirRoles('medico'), (req, res) => {
+  res.render('lista');
+});
+router.get('/enfermeria', permitirRoles('medico'), (req, res) => {
+  res.render('enfermeria');
 });
 
 export default router;

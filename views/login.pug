@@ -1,0 +1,75 @@
+extends layout
+
+block content
+  head
+    title Iniciar Sesión
+    link(rel="stylesheet", href="/css/style.css")
+    style.
+      body {
+        font-family: 'Segoe UI', sans-serif;
+        background: linear-gradient(to bottom, #7dbcff, rgba(255,255,255,0.8)), url('/img/hospital2.jpg');
+        background-repeat: no-repeat;
+        background-size: cover;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .login-box {
+        background-color: rgba(255,255,255,0.9);
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        width: 350px;
+        text-align: center;
+      }
+      .login-box h1 {
+        margin-bottom: 20px;
+      }
+      .login-box form {
+        display: flex;
+        flex-direction: column;
+      }
+      .login-box label {
+        margin: 10px 0 5px 0;
+        text-align: left;
+      }
+      .login-box input {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      .login-box button {
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #3b82f6;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      .login-box button:hover {
+        background-color: #2563eb;
+      }
+      .registro-link {
+        margin-top: 15px;
+        display: block;
+        color: #2563eb;
+        cursor: pointer;
+        text-decoration: underline;
+      }
+
+  body
+    .login-box
+      h1 Iniciar Sesión
+      form(action="/login", method="POST")
+        label(for="username") Nombre de usuario:
+        input(type="text", name="username", required)
+        label(for="password") Contraseña:
+        input(type="password", name="password", required)
+        button(type="submit") Entrar
+      if error
+        p(style="color:red") #{error}
+      a.registro-link(href="/registrar") Crear usuario y contraseña

@@ -166,6 +166,10 @@ block content
         color: white;
         font-weight: bold;
       }
+      @keyframes blink{
+        0%, 100% {opacity: 1;}
+        50{ opacity: 0; }
+      }
 
   header
     img(src="/img/logo.png", alt="Logo del Hospital" )
@@ -179,6 +183,10 @@ block content
       button(name="higienizando") Camas Higienizando
       button(name="emergencias") Camas de Emergencias
       br
+      if user && user.rol === 'limpieza'
+        button#notificacion(style="animation: parpadeo 1s infinite; display: none") Notificar Limpieza
+      br
+    pre= JSON.stringify(alas, null, 2)
     .contenedor
       if alas && alas.length
         each ala in alas
@@ -255,3 +263,41 @@ block content
         });
       });
     });
+
+    async function chequearLimpieza() {
+      try {
+        const res = await fetch('/camas/notificaciones/limpieza');
+        const data = await res.json();
+        const btnNotif = document.getElementById('btnNotificacionesLimpieza');
+
+        if (data.hayLimpieza) {
+          btnNotif.style.display = 'block'; 
+        } else {
+          btnNotif.style.display = 'none';
+        }
+      } catch (error) {
+        console.error('Error al chequear limpieza:', error);
+      }
+    }
+
+    // Mostrar mensajes al hacer click
+    document.getElementById('btnNotificacionesLimpieza').addEventListener('click', () => {
+      alert('Limpieza pendiente');
+      const confirmar = confirm('¿Limpieza terminada?');
+      if (confirmar) {
+        fetch('/camas/notificaciones/limpieza/confirmar', { method: 'POST' })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              alert('Limpieza terminada. Actualizando camas...');
+              // Recarga la página o actualiza estados dinámicamente
+              location.reload();
+            }
+          })
+          .catch(err => alert('Error al actualizar camas: ' + err.message));
+      }
+    });
+
+    
+    chequearLimpieza();
+    setInterval(chequearLimpieza, 30000);
