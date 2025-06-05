@@ -9,6 +9,7 @@ export async function obtenerAlasConHabitacionesYCamas() {
       'SELECT id, capacidad FROM habitaciones WHERE ala_id = ? ORDER BY id',
       [ala.id]
     );
+
     console.log(`Habitaciones para ala ${ala.id}:`, habitaciones);
 
     for (const hab of habitaciones) {

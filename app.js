@@ -2,8 +2,10 @@ import express from 'express';
 const router = express.Router();
 import dotenv from 'dotenv';
 import {obtenerAlasConHabitacionesYCamas} from './models/camas.js';
+import { obtenerHabitacionesPorAla, obtenerCamasPorHabitacion } from './controllers/habitaciones.controllers.js';
 dotenv.config();
 
+const apiRouter = express.Router();
 import session from 'express-session';
 const app = express();
 
@@ -36,9 +38,10 @@ import enfermeriaRoutes from './routes/enfermeria.routes.js';
 import { router as emergenciasRoutes } from './routes/emergencias.routes.js';
 import turnosRoutes from './routes/turnos.routes.js';
 import internacionesRoutes from './routes/internaciones.routes.js';
+import {router as habitacionesRouter} from './routes/habitaciones.routes.js';
+import asignarPacienteRoutes from './routes/asignarPaciente.routes.js';
 
 app.use(express.json());
-app.use(express.urlencoded({extended: true}));
 
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
@@ -64,7 +67,8 @@ app.use('/enfermeria', enfermeriaRoutes);
 app.use('/emergencias', emergenciasRoutes);
 app.use('/turnos', turnosRoutes);
 app.use('/internaciones', internacionesRoutes);
-
+app.use('/habitaciones', habitacionesRouter);
+app.use('/', asignarPacienteRoutes);
 
 app.get('/camas', async (req, res) =>{
   try{
@@ -81,7 +85,7 @@ app.get('/camas', async (req, res) =>{
   }
 });
 
-router.get('/pacientes-disponibles', async (req, res) => {
+app.get('/pacientes-disponibles', async (req, res) => {
   try {
     const pacientes = await obtenerPacientesDisponibles();
     res.status(200).json(pacientes);
@@ -91,22 +95,51 @@ router.get('/pacientes-disponibles', async (req, res) => {
   }
 });
 
+
 app.get('/asignar-cama', async (req, res) => {
   try {
-    const { dni, nombre, sexo } = req.query;
     const alas = await obtenerAlasConHabitacionesYCamas() || [];
-    res.render('asignar-cama', {
-      alas,
-      dniPaciente: dni,
-      nombre,
-      sexoPaciente: sexo
-    });
+
+    // Leer paciente de query string
+    const { dni, nombre, sexo } = req.query;
+    const pacienteSeleccionado = (dni && nombre && sexo)
+      ? { dni, nombre, sexo }
+      : null;
+
+    console.log('Datos para asignar-cama:', JSON.stringify(alas, null, 2));
+    console.log('Paciente seleccionado:', pacienteSeleccionado);
+
+    res.render('asignar-cama', { alas, pacienteSeleccionado });
   } catch (error) {
     console.error('Error al cargar la vista de asignar cama:', error);
     res.status(500).send('Error interno del servidor');
   }
 });
 
+
+apiRouter.get('/habitaciones/:alaId', async (req, res) => {
+  try {
+    const alaId = req.params.alaId;
+    const habitaciones = await obtenerHabitacionesPorAla(alaId);
+    res.json(habitaciones);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ mensaje: 'Error al obtener habitaciones' });
+  }
+});
+
+apiRouter.get('/camas/:habitacionId', async (req, res) => {
+  try {
+    const habitacionId = req.params.habitacionId;
+    const camas = await obtenerCamasPorHabitacion(habitacionId);
+    res.json(camas);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ mensaje: 'Error al obtener camas' });
+  }
+});
+
+app.use('/api', apiRouter);
 
 app.listen(3000, () => {
   console.log('Servidor corriendo en http://localhost:3000');

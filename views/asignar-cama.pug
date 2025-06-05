@@ -2,15 +2,15 @@ extends layout
 
 block content
   head
-    title Asignar Cama
+    title Asignar Paciente a Cama
     link(rel="stylesheet", href="/css/style.css")
     style.
       body {
         font-family: 'Segoe UI', sans-serif;
-        background: linear-gradient(to bottom, #7dbcff, rgba(255,255,255,0.8)), url('/img/hospital2.jpg');
+        background: linear-gradient(to bottom, #7dbcff, rgba(255,255,255,0.8)), url('/img/hospital2.jpg'), url('/img/hospital .jpg'), url('/img/hospital3.jpg');
         background-repeat: no-repeat;
-        background-size: cover;
-        background-position: center;
+        background-size: cover, 33.33% 100%, 33.33% 100%, 33.33% 100%;
+        background-position: center, left, center, right;
         margin: 0;
         display: flex;
         justify-content: center;
@@ -20,94 +20,125 @@ block content
       select {
         width: 100%;
       }
-      .input-group {
-        margin-bottom: 15px;
+      .paciente-box{
+        padding: 16px 24px;
+      }
+      .paciente-info p{
+        margin: 4px 0;
+        font-size: 16px;
+        text-align: center;
       }
 
-  .contenedor
+  .contenedor 
     img.logo-flotante(src="/img/logo.png", alt="Logo")
-    br
-    br
-    .formulario-box
-      h1 Asignar cama a paciente
-      p Paciente: #{nombre} (DNI: #{dni}), Sexo: #{sexo}
+    .formulario-box 
+      br
+      br
+      h1 Asignar Paciente a Cama
 
-      form(id="asignarCamaForm", method="POST", action="/internaciones/asignar")
-        .input-group
-          label(for="tipo_ingreso") Tipo de Ingreso
-          select(name="tipo_ingreso", id="tipo_ingreso", required)
-            option(value="") Seleccionar
-            option(value="guardia") Guardia
-            option(value="derivacion-medica") Derivacion Medica 
-            option(value="cita-programada") Cita Programada 
-            option(value="emergencias") Emergencias 
+      form(method="POST", action="/asignar-paciente")
+        if pacienteSeleccionado 
+          .paciente-box  
+            h3 Paciente Seleccionado 
+            .paciente-info 
+              p DNI: #{pacienteSeleccionado.dni} | Nombre: #{pacienteSeleccionado.nombre} | Sexo: #{pacienteSeleccionado.sexo} 
 
-        .input-group
-          label(for="fecha_ingreso") Fecha de Ingreso
-          input(type="datetime-local", id="fecha_ingreso", name="fecha_ingreso", required, value=new Date().toISOString().slice(0,16))
+            input(type="hidden", name="dni_pacientes", value="pacienteSeleccionado.dni")
+            input(type="hidden", name="sexo", value="pacienteSeleccionado.sexo")
+        else 
+          .paciente-box 
+            h3 Paciente Seleccionado 
+            p(style="color: crimson; font-weight: bold;") No hay paciente seleccionado
 
-        .input-group
-          label(for="ala") Seleccionar Ala
-          select#selectAla(name="ala", required)
-            option(value="") Seleccionar Ala
-            each ala in alas 
-                option(value=ala.id) #{ala.nombre}
+        label(for="tipo_ingreso") Tipo de ingreso 
+        Select(name="tipo_ingreso", id="tipo_ingreso" required)
+          option(value="" disabled selected) --Seleccione una opcion --
+          option(value="guardia") Guardia 
+          option(value="emergencias") Emergencias 
+          option(value="derivacion_medica") Derivacion Medica
+          option(value="cita_programada") Cita Programada  
 
-        .input-group
-          label(for="habitacion") Seleccionar Habitación
-          select#selectHabitacion(name="habitacion", disabled, required)
-            option(value="") Primero seleccione un Ala
+        label(for="ala") Seleccione un Ala
+        select(name="id_ala", id="id_ala" required)
+          option(value="" disabled selected) -- Seleccione Ala --
+          each ala in alas
+            option(value=ala.id) #{ala.nombre}
 
-        .input-group
-          label(for="cama") Seleccionar Cama
-          select#selectCama(name="camaId", disabled, required)
-            option(value="") Primero seleccione una Habitación
+        
 
-        input(type="hidden", name="pacienteId", id="pacienteId", value=dniPaciente)
-        input(type="hidden", name="sexo", value=sexoPaciente)
+        label(for="id_habitacion") Seleccione Habitación
+        select(name="id_habitacion", id="id_habitacion" required disabled)
+          option(value="" disabled selected) -- Seleccione Habitación --
+          each ala in alas 
+            optgroup(label=ala.nombre)
+              each habitacion in ala.habitaciones 
+                option(value=habitacion.id) Habitacion: #{habitacion.id} - Capacidad: #{habitacion.capacidad}
+        
 
-        button#btnAsignar(type="submit", class="boton") Asignar Cama
-    
-    script.
-        const selectCama = document.getElementById('selectCama');
-        const selectHabitacion = document.getElementById('selectHabitacion');
+        label(for="id_cama") Seleccione Cama
+        select(name="id_cama", id="id_cama" required disabled)
+          option(value="" disabled selected) -- Seleccione Cama --
 
-        selectHabitacion.addEventListener('change', () => {
-          const habitacionId = selectHabitacion.value;
-          if (!habitacionId) {
-            selectCama.innerHTML = '<option value="">Primero seleccione una Habitación</option>';
-            selectCama.disabled = true;
-            return;
-          }
+        br
 
-          fetch(`/api/camas?habitacionId=${habitacionId}&estado=libre`)
-            .then(res => res.json())
-            .then(camas => {
-              selectCama.innerHTML = '';
-              if(camas.length === 0) {
-                const option = document.createElement('option');
-                option.value = '';
-                option.textContent = 'No hay camas libres';
-                selectCama.appendChild(option);
-                selectCama.disabled = true;
-              } else {
-                const defaultOption = document.createElement('option');
-                defaultOption.value = '';
-                defaultOption.textContent = 'Seleccionar cama';
-                selectCama.appendChild(defaultOption);
+        button(type="submit" class="boton") Asignar Paciente
 
-                camas.forEach(cama => {
-                  const option = document.createElement('option');
-                  option.value = cama.id;
-                  option.textContent = `Cama ${cama.id}`;
-                  selectCama.appendChild(option);
-                });
-                selectCama.disabled = false;
-              }
-            })
-            .catch(err => {
-              console.error(err);
-              alert('Error al cargar camas');
-            });
+  script.
+    const alasSelect = document.getElementById('id_ala');
+    const habitacionesSelect = document.getElementById('id_habitacion');
+    const camasSelect = document.getElementById('id_cama');
+
+    alasSelect.addEventListener('change', async () => {
+      const alaId = alasSelect.value;
+      habitacionesSelect.disabled = true;
+      camasSelect.innerHTML = '<option disabled selected>-- Seleccione Cama --</option>';
+      camasSelect.disabled = true;
+
+      if(!alaId) return;
+
+      try {
+        const res = await fetch(`/api/habitaciones/${alaId}`);
+        const habitaciones = await res.json();
+
+        habitacionesSelect.innerHTML = '<option disabled selected>-- Seleccione Habitación --</option>';
+        habitaciones.forEach(hab => {
+          habitacionesSelect.innerHTML += `<option value="${hab.id}">Habitación ${hab.id} (Capacidad: ${hab.capacidad})</option>`;
         });
+        habitacionesSelect.disabled = false;
+      } catch(e) {
+        habitacionesSelect.innerHTML = '<option disabled selected>Error al cargar</option>';
+      }
+    });
 
+    habitacionesSelect.addEventListener('change', async () => {
+      const habId = habitacionesSelect.value;
+      camasSelect.disabled = true;
+      if (!habId) return;
+
+      try {
+        const res = await fetch(`/api/camas/${habId}`);
+        const camas = await res.json();
+
+        camasSelect.innerHTML = '<option disabled selected>-- Seleccione Cama --</option>';
+        
+        camas
+          .filter(cama => cama.estado === 'libre') 
+          .forEach(cama => {
+            camasSelect.innerHTML += `<option value="${cama.id}" data-sexo="${cama.sexo || ''}">Cama: ${cama.id}</option>`;
+          });
+
+        camasSelect.disabled = false;
+      } catch (e) {
+        camasSelect.innerHTML = '<option disabled selected>Error al cargar</option>';
+      }
+    });
+
+    const pacientesSelect = document.getElementById('dni_paciente');
+    camasSelect.addEventListener('change', () => {
+      const camaSexo = camasSelect.options[camasSelect.selectedIndex].dataset.sexo || '';
+      const pacienteSexo = pacientesSelect.options[pacientesSelect.selectedIndex]?.dataset.sexo || '';
+      if (camaSexo && pacienteSexo && camaSexo !== pacienteSexo) {
+        alert('No se puede asignar paciente de sexo distinto en habitación con dos camas.');
+        camasSelect.value = '';
+      }
+    });

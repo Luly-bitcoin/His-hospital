@@ -49,7 +49,6 @@ router.post('/asignar', async (req, res) => {
     res.status(500).json({ error: 'Error al guardar asignación' });
   }
 });
-// en internaciones.routes.js (o en otro archivo de rutas si prefieres)
 
 router.get('/api/alas', async (req, res) => {
   try {
@@ -61,65 +60,56 @@ router.get('/api/alas', async (req, res) => {
   }
 });
 
-router.get('/api/habitaciones', async (req, res) => {
-  const { alaId } = req.query;
-  if (!alaId) return res.status(400).json({ error: 'Falta parámetro alaId' });
+router.post('/api/internar', async (req, res) => {
+  const { camaId, pacienteDni, sexo } = req.body;
 
   try {
-    const [habitaciones] = await pool.query(
-      'SELECT id, capacidad FROM habitaciones WHERE ala_id = ? ORDER BY id',
-      [alaId]
-    );
+    // Obtener habitación de la cama
+    const [[{ habitacion_id }]] = await conexion.execute(`
+      SELECT habitacion_id FROM camas WHERE id = ?
+    `, [camaId]);
 
-    // Para cada habitación, cargar camas
-    for (const hab of habitaciones) {
-      const [camas] = await pool.query(`
-        SELECT 
-          c.id,
-          CASE
-            WHEN i.id IS NOT NULL AND i.fecha_egreso IS NULL THEN 'ocupada'
-            WHEN c.estado = 'higienizando' THEN 'higienizando'
-            ELSE 'libre'
-          END AS estado
-        FROM camas c
-        LEFT JOIN internaciones i ON c.id = i.id_cama AND i.fecha_egreso IS NULL
-        WHERE c.habitacion_id = ?
-        ORDER BY c.id
-      `, [hab.id]);
-      hab.camas = camas;
+    // Verificar si hay alguien internado en esa habitación de distinto sexo
+    const [ocupantes] = await conexion.execute(`
+      SELECT i.sexo
+      FROM internaciones i
+      JOIN camas c ON c.id = i.id_cama
+      WHERE c.habitacion_id = ? AND i.fecha_egreso IS NULL
+    `, [habitacion_id]);
+
+    const conflicto = ocupantes.some(o => o.sexo !== sexo);
+    if (conflicto) {
+      return res.status(400).json({ error: 'Ya hay un paciente de distinto sexo en esta habitación.' });
     }
 
-    res.json(habitaciones);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Error al obtener habitaciones' });
+    // Insertar internación
+    const fecha = new Date();
+    await conexion.execute(`
+      INSERT INTO internaciones (dni_pacientes, id_cama, tipo_ingreso, fecha_ingreso, sexo)
+      VALUES (?, ?, 'normal', ?, ?)
+    `, [pacienteDni, camaId, fecha, sexo]);
+
+    res.json({ mensaje: 'Paciente internado correctamente.' });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al internar al paciente.' });
   }
 });
 
 
 router.get('/api/camas', async (req, res) => {
   const { habitacionId } = req.query;
-  if (!habitacionId) return res.status(400).json({ error: 'Falta parámetro habitacionId' });
+  if (!habitacionId) return res.status(400).json({ error: 'Falta el ID de habitación' });
 
   try {
-    const alas = await obtenerAlasConHabitacionesYCamas();
-
-    // Buscar la habitación en todas las alas
-    let camas = [];
-    for (const ala of alas) {
-      const habitacion = (ala.habitaciones || []).find(h => h.id === Number(habitacionId));
-
-      if (habitacion) {
-        camas = habitacion.camas || [];
-        break;
-      }
-    }
-
-    if (!camas.length) return res.status(404).json({ error: 'Habitación no encontrada o sin camas' });
-
+    const [camas] = await conexion.execute(
+      `SELECT id FROM camas WHERE habitacion_id = ?`,
+      [habitacionId]
+    );
     res.json(camas);
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Error al obtener camas' });
   }
 });

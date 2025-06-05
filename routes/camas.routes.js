@@ -18,35 +18,33 @@ router.post('/camas/limpiar/:id', async (req, res) => {
     res.status(500).send('Error en el servidor');
   }
 });
-
-router.post('/asignar-paciente', async (req, res) => {
-  const { Idcama, pacienteId } = req.body;
-  if (!Idcama || !pacienteId) {
-    return res.status(400).json({ message: 'Datos incompletos' });
-  }
-
+router.get('/asignar-paciente', async (req, res) => {
   try {
-    const [existente] = await conexion.query(`
-      SELECT id FROM internaciones WHERE id_cama = ? AND fecha_egreso IS NULL
-    `, [Idcama]);
+    // Traer alas
+    const [alas] = await conexion.query(`SELECT id, nombre FROM alas ORDER BY nombre`);
 
-    if (existente.length > 0) {
-      return res.status(400).json({ message: 'La cama ya está ocupada' });
-    }
+    // Todos los pacientes
+    const [todosPacientes] = await conexion.query(`SELECT dni, nombre FROM pacientes ORDER BY nombre`);
 
-    const fechaAsignacion = new Date();
+    // Pacientes con internación activa
+    const [pacientesConInternacion] = await conexion.query(`
+      SELECT paciente_id FROM internaciones WHERE fecha_egreso IS NULL
+    `);
 
-    await conexion.query(`
-      INSERT INTO internaciones (paciente_id, id_cama, fecha_asignacion)
-      VALUES (?, ?, ?)
-    `, [pacienteId, Idcama, fechaAsignacion]);
+    // Crear un Set de DNI de pacientes internados
+    const pacientesInternadosSet = new Set(pacientesConInternacion.map(p => p.paciente_id));
 
-    res.status(200).json({ message: 'Paciente asignado correctamente' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Error al asignar paciente' });
+    // Filtrar pacientes disponibles (no internados)
+    const pacientes = todosPacientes.filter(p => !pacientesInternadosSet.has(p.dni));
+
+    res.render('asignar-paciente', { alas, pacientes });
+  } catch (error) {
+    console.error(error);
+    res.render('asignar-paciente', { alas: [], pacientes: [], error: 'Error al cargar datos' });
   }
 });
+
+
 
 function agruparCamas(camas) {
   const alas = [];
@@ -97,5 +95,29 @@ router.get('/camas', async (req, res) => {
     res.render('camas', { alas: [], error: 'Error al cargar las camas' });
   }
 });
+
+router.get('/api/camas/:id', async (req, res) => {
+  const habitacionId = req.params.id;
+
+  try {
+    const [camas] = await conexion.query(`
+      SELECT 
+        c.id,
+        c.estado,
+        p.sexo AS sexo_paciente
+      FROM camas c
+      LEFT JOIN internaciones i ON c.id = i.id_cama AND i.fecha_egreso IS NULL
+      LEFT JOIN pacientes p ON i.paciente_id = p.dni
+      WHERE c.habitacion_id = ?
+      ORDER BY c.id;
+    `, [habitacionId]);
+
+    res.json(camas);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener camas' });
+  }
+});
+
 
 export default router;
