@@ -91,3 +91,18 @@ export async function obtenerPacientesDisponibles() {
     return [];
   }
 }
+
+export const obtenerPacientesInternados = async (req, res) => {
+  try {
+    const [pacientes] = await conexion.execute(`
+      SELECT p.nombre_completo, i.dni_pacientes AS dni, i.cama_id, i.fecha_asignacion
+      FROM internaciones i
+      JOIN pacientes p ON p.dni = i.dni_pacientes
+      WHERE i.fecha_alta IS NULL OR i.fecha_alta > NOW()
+    `);
+    res.status(200).json(pacientes);
+  } catch (error) {
+    console.error('Error al obtener pacientes internados:', error);
+    res.status(500).json({ mensaje: 'Error al obtener pacientes internados' });
+  }
+};

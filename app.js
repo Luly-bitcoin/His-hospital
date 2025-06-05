@@ -3,7 +3,11 @@ const router = express.Router();
 import dotenv from 'dotenv';
 import {obtenerAlasConHabitacionesYCamas} from './models/camas.js';
 import { obtenerHabitacionesPorAla, obtenerCamasPorHabitacion } from './controllers/habitaciones.controllers.js';
+import mysql from 'mysql2/promise';
 dotenv.config();
+
+
+const conexion = mysql.createPool({});
 
 const apiRouter = express.Router();
 import session from 'express-session';
@@ -138,6 +142,24 @@ apiRouter.get('/camas/:habitacionId', async (req, res) => {
     res.status(500).json({ mensaje: 'Error al obtener camas' });
   }
 });
+
+app.get('/api/camas/emergencias-disponibles', async (req, res) => {
+  try {
+    const [camas] = await conexion.query(`
+      SELECT c.id AS id, a.nombre AS ala
+      FROM cama c
+      JOIN habitacion h ON c.id_habitacion = h.id
+      JOIN ala a ON h.id_ala = a.id
+      WHERE c.estado = 'libre'
+    `);
+
+    res.json(camas);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error al obtener camas' });
+  }
+});
+
 
 app.use('/api', apiRouter);
 

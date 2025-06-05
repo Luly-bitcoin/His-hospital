@@ -1,121 +1,97 @@
 doctype html
-html(lang="es")
+html
   head
+    title Ingreso de Emergencia - HIS
     meta(charset="UTF-8")
-    title Ingreso de Emergencia
-    meta(name="viewport" content="width=device-width, initial-scale=1.0")
-    link(rel="stylesheet" href="css/style.css")
-    style.
-      body {
-        font-family: 'Segoe UI', sans-serif;
-        background-color: #fff5f5;
-        padding: 40px;
-      }
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    link(rel="stylesheet", href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css")
+    script(src="https://code.jquery.com/jquery-3.6.0.min.js")
 
-      h1 {
-        text-align: center;
-        color: #b30000;
-      }
-
-      form {
-        max-width: 500px;
-        margin: 0 auto;
-        background-color: white;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      }
-
-      label {
-        display: block;
-        margin-top: 15px;
-        font-weight: bold;
-      }
-
-      input, select {
-        width: 100%;
-        padding: 10px;
-        margin-top: 5px;
-        border-radius: 6px;
-        border: 1px solid #ccc;
-      }
-
-      button {
-        margin-top: 20px;
-        width: 100%;
-        padding: 12px;
-        background-color: #e60000;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-size: 16px;
-        font-weight: bold;
-        cursor: pointer;
-      }
   body
-    h1 Ingreso de Emergencia
-    br
-    br
-    form#formEmergencia
-      label DNI del paciente:
-      input#dni(type="text" required)
-      label Hora de ingreso:
-      input#hora(type="text" disabled)
-      label Cama de emergencia:
-      select#cama(required)
-        //- Opciones cargadas dinámicamente
+    .container.mt-5
+      h1.text-center Ingreso de Paciente en Emergencia
 
-      button(type="submit") Registrar emergencia
+      form(action="/emergencias/guardar", method="POST", id="formEmergencia")
+        .mb-3
+          label.form-label(for="nombre") Nombre del Paciente
+          input.form-control(type="text", name="nombre", id="nombre", required)
+
+        .mb-3
+          label.form-label(for="dni") DNI
+          input.form-control(type="text", name="dni", id="dni", required)
+
+        .mb-3
+          label.form-label(for="sexo") Sexo
+          select.form-select(name="sexo", id="sexo", required)
+            option(value="No especificado") No especificado
+            option(value="Masculino") Masculino
+            option(value="Femenino") Femenino
+
+        .mb-3
+          label.form-label(for="observaciones") Observaciones
+          textarea.form-control(name="observaciones", rows="3")
+
+        .mb-3 
+          label.form-label(for="cama_id") Seleccionar Cama de Emergencia
+          select.form-select(name="cama_id", id="cama_id", required)
+            option(value="") -- Selecciona una cama --
+
+
+        .form-check.form-switch.mb-4
+          input.form-check-input(type="checkbox", id="modoEmergencia", onclick="activarEmergencia()")
+          label.form-check-label(for="modoEmergencia") Ingreso sin datos (modo emergencia)
+
+        
+
+        button.btn.btn-danger(type="submit") Registrar Paciente
 
     script.
-      // Mostrar hora actual
-      const ahora = new Date();
-      const hora = ahora.toLocaleTimeString('es-ES');
-      document.getElementById('hora').value = hora;
-
-      // Cargar camas de emergencia disponibles
-      async function cargarCamas() {
-        try {
-          const res = await fetch('/api/camas/emergencias-disponibles');
-          const camas = await res.json();
-          const select = document.getElementById('cama');
-          camas.forEach(c => {
-            const option = document.createElement('option');
-            option.value = c.id;
-            option.textContent = `Cama ${c.numero} - Ala ${c.ala}`;
-            select.appendChild(option);
-          });
-        } catch (err) {
-          alert('Error al cargar camas: ' + err.message);
+      function activarEmergencia() {
+        if ($('#modoEmergencia').is(':checked')) {
+          $('#nombre').val('NN');
+          const codigo = 'EMG' + Date.now();
+          $('#dni').val(codigo);
+          $('#sexo').val('No especificado');
+          $('#observaciones').val('Paciente ingresado sin datos por emergencia.');
+        } else {
+          $('#nombre').val('');
+          $('#dni').val('');
+          $('#sexo').val('No especificado');
+          $('#observaciones').val('');
         }
       }
+      $(document).ready(function () {
+        $.get('/api/camas/emergencias-disponibles', function (data) {
+          console.log('Camas recibidas:', data); // <-- agrega esto para debug
+          if (data.length === 0) {
+            $('#cama_id').append(`<option disabled>No hay camas disponibles</option>`);
+          } else {
+            data.forEach(cama => {
+              $('#cama_id').append(`<option value="${cama.id}">Cama ${cama.id} - Ala ${cama.ala}</option>`);
+            });
+          }
+        }).fail(function () {
+          alert("Error al cargar camas de emergencia");
+        });
+      });
 
-      cargarCamas();
 
-      // Enviar formulario
-      document.getElementById('formEmergencia').addEventListener('submit', async e => {
+
+      $('#formEmergencia').submit(function (e) {
         e.preventDefault();
+
         const datos = {
-          dni: document.getElementById('dni').value,
+          dni: $('#dni').val(),
           hora: new Date().toISOString(),
-          cama_id: document.getElementById('cama').value,
+          cama_id: $('#cama_id').val()
         };
 
-        try {
-          const res = await fetch('/api/emergencias', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(datos)
-          });
-
-          if (!res.ok) {
-            const data = await res.json();
-            throw new Error(data.message || 'Error al registrar emergencia');
-          }
-
-          alert('Emergencia registrada correctamente');
-          window.location.href = 'index.html';
-        } catch (err) {
-          alert('Error: ' + err.message);
-        }
+        $.post('/api/emergencias', datos, function (response) {
+          alert(response.message);
+          location.reload();
+        }).fail(function (err) {
+          alert(err.responseJSON?.message || 'Error al registrar la emergencia');
+        });
       });
+
+

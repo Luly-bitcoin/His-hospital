@@ -6,7 +6,7 @@ import {
   listar
 } from "../controllers/pacientes.controllers.js";
 import { obtenerPacientesDisponibles } from "../controllers/pacientes.controllers.js";
-
+import {obtenerPacientesInternados} from "../controllers/pacientes.controllers.js";
 
 const router = express.Router();
  
@@ -19,6 +19,7 @@ router.get("/lista", (req, res) => {
   res.render("pacientes/lista");
 });
 
+router.get('/pacientes-internados', obtenerPacientesInternados);
 
 router.get('/disponibles', async (req, res) => {
   try {
@@ -89,6 +90,7 @@ router.get('/:dni', async (req, res) => {
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 });
+
 
 
 router.get("/verificar-dni/:dni", verificarDNI);
