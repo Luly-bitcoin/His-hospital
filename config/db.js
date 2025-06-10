@@ -1,18 +1,16 @@
-// db.js
-import mysql from 'mysql2/promise';
-import dotenv from 'dotenv';
-dotenv.config();
+const {Sequelize} = require('sequelize');
+require('dotenv').config();
 
-const conexion = await mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'his_hospital',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-});
+const sequelize = new Sequelize(
+  process.env.DB_USER,
+  process.env.DB_PASSWORD,
+  process.env.DB_NAME,
+  {
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    dialect:'mysql',
+    loggin: false,
+  }
+);
 
-console.log("Conectado a la base de datos MySQL");
-
-export {conexion};
+module.exports = sequelize;

@@ -120,4 +120,5 @@ router.get('/api/camas/:id', async (req, res) => {
 });
 
 
+
 export default router;

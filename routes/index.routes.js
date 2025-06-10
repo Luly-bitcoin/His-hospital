@@ -17,7 +17,6 @@ router.get('/camas', permitirRoles('limpieza', 'admisión'), (req, res) => {
   res.render('camas');
 });
 
-// Rutas para medico
 router.get('/medicos', permitirRoles('medico'), (req, res) => {
   res.render('medicos');
 });

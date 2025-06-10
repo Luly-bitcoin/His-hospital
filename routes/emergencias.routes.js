@@ -14,4 +14,5 @@ router.get('/api/camas/emergencias-disponibles', emergenciasController.getCamasE
 // API para registrar emergencia
 router.post('/api/emergencias', emergenciasController.postRegistrarEmergencia);
 
-export {router};
+export default router;
+

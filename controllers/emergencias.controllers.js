@@ -1,18 +1,20 @@
-import {conexion} from '../config/db.js'; // Asegurate de tener esta conexión configurada
+import {conexion} from '../config/db.js'; 
 
 const emergenciasController = {
   getIngresoEmergencia: (req, res) => {
     res.render('emergencias');
+    console.log('Entrando aqui');
   },
+  
 
   getCamasEmergencias: async (req, res) => {
     try {
       const [camas] = await conexion.query(`
-        SELECT c.id, c.numero, a.nombre AS ala
+        SELECT c.id
         FROM camas c
         JOIN habitaciones h ON c.habitacion_id = h.id
         JOIN alas a ON h.ala_id = a.id
-        WHERE a.id = 7 AND c.estado = 'libre'
+        WHERE a.nombre = 'Emergencias' AND c.estado = 'libre'
       `);
 
       res.json(camas);
@@ -22,35 +24,41 @@ const emergenciasController = {
     }
   },
 
-  postRegistrarEmergencia: async (req, res) => {
-    const { dni, hora, cama_id } = req.body;
+ postRegistrarEmergencia: async (req, res) => {
+  const { dni, nombre, sexo, observacion, hora, cama_id } = req.body;
 
-    if (!dni || !hora || !cama_id) {
-      return res.status(400).json({ message: 'Faltan datos' });
-    }
+  console.log('Datos recibidos:', { dni, nombre, sexo, observacion, hora, cama_id });
 
-    try {
-      // Insertar el paciente en tabla pacientes (si querés crear entrada)
-      await conexion.query(
-        `INSERT INTO pacientes (dni, nombre, sexo, observaciones, emergencia) VALUES (?, ?, ?, ?, ?)`,
-        [dni, 'NN', 'No especificado', 'Paciente ingresado sin datos por emergencia.', 1]
-      );
-
-      // Registrar internación/emergencia
-      await conexion.query(
-        `INSERT INTO internaciones (paciente_dni, cama_id, fecha_ingreso) VALUES (?, ?, ?)`,
-        [dni, cama_id, hora]
-      );
-
-      // Cambiar estado de la cama
-      await conexion.query(`UPDATE camas SET estado = 'ocupada' WHERE id = ?`, [cama_id]);
-
-      res.json({ message: 'Emergencia registrada correctamente' });
-    } catch (err) {
-      console.error('Error al registrar emergencia:', err);
-      res.status(500).json({ message: 'Error al registrar emergencia' });
-    }
+  if (!dni || !nombre || !sexo || !hora || !cama_id) {
+    return res.status(400).json({ message: 'Faltan datos' });
   }
+
+  try {
+    const fecha_ingreso = new Date(hora).toISOString().slice(0, 19).replace('T', ' ');
+    console.log('Fecha ingreso formateada:', fecha_ingreso);
+
+    const [result] = await conexion.query(
+      `INSERT INTO emergencias (dni_falso, id_cama, fecha_ingreso, sexo, observacion) VALUES (?, ?, ?, ?, ?)`,
+      [dni, cama_id, fecha_ingreso, sexo, observacion]
+    );
+    console.log('Resultado inserción emergencias:', result);
+
+    const [updateResult] = await conexion.query(`UPDATE camas SET estado = 'ocupada' WHERE id = ?`, [cama_id]);
+    console.log('Resultado actualización cama:', updateResult);
+
+    res.json({ message: 'Emergencia registrada correctamente' });
+  } catch (err) {
+    console.error('ERROR completo:', err);
+    console.error('ERROR tipo: ', typeof err);
+    if(err && err.sqlMessage){
+      console.error('SQL MESSAGE: ', err.sqlMessage);
+    }
+    // Enviar TODO el error para que puedas verlo en la respuesta del cliente
+    res.status(500).json({ message: err.sqlMessage || err.message || JSON.stringify(err) });
+  }
+}
+
+
 };
 
 export default emergenciasController;

@@ -49,13 +49,13 @@ block content
     form(action="/turnos/agendar" method="POST")
       label(for="dni_paciente") DNI Paciente:
       .fila-dni
-        select#dni_paciente(name="dni_paciente")
+        select#dni_paciente(name="dni_paciente" required)
           option(value="") Seleccione DNI
           each p in pacientes 
             option(value=p.dni)= p.dni 
 
       label(for="nombre_paciente") Nombre del paciente:
-      input#nombre_paciente(name="nombre_paciente", readonly)
+      input#nombre_paciente(name="nombre_paciente", readonly required)
 
       label(for="obra_social") Obra Social:
       input#obra_social(name="obra_social", readonly)

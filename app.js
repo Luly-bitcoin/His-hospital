@@ -1,13 +1,11 @@
+require ('./models/sync');
+require('dotenv').config();
 import express from 'express';
 const router = express.Router();
 import dotenv from 'dotenv';
 import {obtenerAlasConHabitacionesYCamas} from './models/camas.js';
 import { obtenerHabitacionesPorAla, obtenerCamasPorHabitacion } from './controllers/habitaciones.controllers.js';
-import mysql from 'mysql2/promise';
 dotenv.config();
-
-
-const conexion = mysql.createPool({});
 
 const apiRouter = express.Router();
 import session from 'express-session';
@@ -39,11 +37,12 @@ import medicosRoutes from './routes/medicos.routes.js';
 import camasRoutes from './routes/camas.routes.js';
 import pacientesRoutes from './routes/pacientes.routes.js';
 import enfermeriaRoutes from './routes/enfermeria.routes.js';
-import { router as emergenciasRoutes } from './routes/emergencias.routes.js';
+import emergenciasRoutes from './routes/emergencias.routes.js';
 import turnosRoutes from './routes/turnos.routes.js';
 import internacionesRoutes from './routes/internaciones.routes.js';
 import {router as habitacionesRouter} from './routes/habitaciones.routes.js';
 import asignarPacienteRoutes from './routes/asignarPaciente.routes.js';
+
 
 app.use(express.json());
 
@@ -146,26 +145,33 @@ apiRouter.get('/camas/:habitacionId', async (req, res) => {
 app.get('/api/camas/emergencias-disponibles', async (req, res) => {
   try {
     const [camas] = await conexion.query(`
-      SELECT c.id AS id, a.nombre AS ala
-      FROM cama c
-      JOIN habitacion h ON c.id_habitacion = h.id
-      JOIN ala a ON h.id_ala = a.id
-      WHERE c.estado = 'libre'
+      SELECT c.id AS id, a.nombre AS alas
+      FROM camas c
+      JOIN habitaciones h ON c.habitacion_id = h.id
+      JOIN alas a ON h.ala_id = a.id
+      WHERE c.estado = 'libre' AND a.nombre = 'Emergencias'
     `);
 
     res.json(camas);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Error al obtener camas' });
+    res.status(500).json({ message: 'Error al obtener camas de emergencia' });
   }
 });
 
-
 app.use('/api', apiRouter);
 
-app.listen(3000, () => {
-  console.log('Servidor corriendo en http://localhost:3000');
-});
+const PORT = process.env.PORT;
+sequelize.sync({ alter: true})
+  .then(() =>{
+    console.log('Modelos sincronizados');
+    app.listen(PORT, ' ', () =>{
+      console.log(`servidor iniciando en http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('Error al sincronizar modelos: ', err);
+  });
 
 process.on('uncaughtException', (err) => {
   console.error('Excepción no capturada:', err);

@@ -11,7 +11,7 @@ html
     .container.mt-5
       h1.text-center Ingreso de Paciente en Emergencia
 
-      form(action="/emergencias/guardar", method="POST", id="formEmergencia")
+      form(method="POST", id="formEmergencia" action="/emergencias")
         .mb-3
           label.form-label(for="nombre") Nombre del Paciente
           input.form-control(type="text", name="nombre", id="nombre", required)
@@ -62,12 +62,12 @@ html
       }
       $(document).ready(function () {
         $.get('/api/camas/emergencias-disponibles', function (data) {
-          console.log('Camas recibidas:', data); // <-- agrega esto para debug
+          console.log('Camas recibidas:', data); 
           if (data.length === 0) {
             $('#cama_id').append(`<option disabled>No hay camas disponibles</option>`);
           } else {
             data.forEach(cama => {
-              $('#cama_id').append(`<option value="${cama.id}">Cama ${cama.id} - Ala ${cama.ala}</option>`);
+              $('#cama_id').append(`<option value="${cama.id}">Cama ${cama.id}</option>`);
             });
           }
         }).fail(function () {
@@ -82,16 +82,27 @@ html
 
         const datos = {
           dni: $('#dni').val(),
-          hora: new Date().toISOString(),
-          cama_id: $('#cama_id').val()
+          nombre: $('#nombre').val(),
+          sexo: $('#sexo').val(),
+          observaciones: $('#observaciones').val(),
+          cama_id: $('#cama_id').val(),
+          hora: new Date().toISOString()
+          
         };
 
-        $.post('/api/emergencias', datos, function (response) {
-          alert(response.message);
-          location.reload();
-        }).fail(function (err) {
-          alert(err.responseJSON?.message || 'Error al registrar la emergencia');
+        $.ajax({
+          url: '/api/emergencias',
+          method: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify(datos),
+          success: function (res) {
+            alert('Paciente registrado exitosamente');
+            window.location.href = '/';
+          },
+          error: function (err) {
+            console.error('Error:', err);
+            alert(err.responseJSON?.message || 'Error al registrar la emergencia');
+          }
         });
       });
-
 
