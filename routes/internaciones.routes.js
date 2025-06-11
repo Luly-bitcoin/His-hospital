@@ -1,6 +1,6 @@
 // routes/internaciones.routes.js
 import express from 'express';
-import { conexion } from '../config/db.js';
+import sequelize from '../config/db.js';
 import { obtenerAlasConHabitacionesYCamas } from '../models/camas.js';
 
 const router = express.Router();
@@ -28,7 +28,7 @@ router.post('/asignar', async (req, res) => {
 
   try {
     // Validar que la cama no esté ocupada
-    const [result] = await conexion.query(
+    const [result] = await sequelize.query(
       'SELECT * FROM asignaciones WHERE cama_id = ? AND fecha_egreso IS NULL', 
       [camaId]
     );
@@ -38,7 +38,7 @@ router.post('/asignar', async (req, res) => {
     }
 
     // Insertar asignación
-    await conexion.query(
+    await sequelize.query(
       'INSERT INTO asignaciones (paciente_id, cama_id, tipo_ingreso, fecha_ingreso, ala_id, habitacion_id, sexo) VALUES (?, ?, ?, ?, ?, ?, ?)', 
       [pacienteId, camaId, tipo_ingreso, fecha_ingreso, ala, habitacion, sexo]
     );
@@ -65,12 +65,12 @@ router.post('/api/internar', async (req, res) => {
 
   try {
     // Obtener habitación de la cama
-    const [[{ habitacion_id }]] = await conexion.execute(`
+    const [[{ habitacion_id }]] = await sequelize.execute(`
       SELECT habitacion_id FROM camas WHERE id = ?
     `, [camaId]);
 
     // Verificar si hay alguien internado en esa habitación de distinto sexo
-    const [ocupantes] = await conexion.execute(`
+    const [ocupantes] = await sequelize.execute(`
       SELECT i.sexo
       FROM internaciones i
       JOIN camas c ON c.id = i.id_cama
@@ -84,7 +84,7 @@ router.post('/api/internar', async (req, res) => {
 
     // Insertar internación
     const fecha = new Date();
-    await conexion.execute(`
+    await sequelize.execute(`
       INSERT INTO internaciones (dni_pacientes, id_cama, tipo_ingreso, fecha_ingreso, sexo)
       VALUES (?, ?, 'normal', ?, ?)
     `, [pacienteDni, camaId, fecha, sexo]);
@@ -103,7 +103,7 @@ router.get('/api/camas', async (req, res) => {
   if (!habitacionId) return res.status(400).json({ error: 'Falta el ID de habitación' });
 
   try {
-    const [camas] = await conexion.execute(
+    const [camas] = await sequelize.execute(
       `SELECT id FROM camas WHERE habitacion_id = ?`,
       [habitacionId]
     );

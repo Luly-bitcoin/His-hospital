@@ -1,5 +1,5 @@
 import express from 'express';
-import { conexion } from '../config/db.js';
+import sequelize from '../config/db.js';
 import { actualizarEstadoCama } from '../controllers/camas.controllers.js';
 
 const router = express.Router();
@@ -21,13 +21,13 @@ router.post('/camas/limpiar/:id', async (req, res) => {
 router.get('/asignar-paciente', async (req, res) => {
   try {
     // Traer alas
-    const [alas] = await conexion.query(`SELECT id, nombre FROM alas ORDER BY nombre`);
+    const [alas] = await sequelize.query(`SELECT id, nombre FROM alas ORDER BY nombre`);
 
     // Todos los pacientes
-    const [todosPacientes] = await conexion.query(`SELECT dni, nombre FROM pacientes ORDER BY nombre`);
+    const [todosPacientes] = await sequelize.query(`SELECT dni, nombre FROM pacientes ORDER BY nombre`);
 
     // Pacientes con internación activa
-    const [pacientesConInternacion] = await conexion.query(`
+    const [pacientesConInternacion] = await sequelize.query(`
       SELECT paciente_id FROM internaciones WHERE fecha_egreso IS NULL
     `);
 
@@ -70,7 +70,7 @@ function agruparCamas(camas) {
 
 router.get('/camas', async (req, res) => {
   try {
-    const [camas] = await conexion.query(`
+    const [camas] = await sequelize.query(`
       SELECT
         c.id AS id_cama,
         c.id AS numero,
@@ -100,7 +100,7 @@ router.get('/api/camas/:id', async (req, res) => {
   const habitacionId = req.params.id;
 
   try {
-    const [camas] = await conexion.query(`
+    const [camas] = await sequelize.query(`
       SELECT 
         c.id,
         c.estado,

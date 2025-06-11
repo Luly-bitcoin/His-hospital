@@ -1,8 +1,8 @@
-import {conexion} from '../config/db.js'; 
+import sequelize from '../config/db.js';
 
 export const checkLimpieza = async (req, res) => {
   try {
-    const [rows] = await conexion.query('SELECT COUNT(*) AS count FROM camas WHERE estado = ?', ['higienizando']);
+    const [rows] = await sequelize.query('SELECT COUNT(*) AS count FROM camas WHERE estado = ?', ['higienizando']);
     const hayLimpieza = rows[0].count > 0;
     res.json({ hayLimpieza });
   } catch (error) {
@@ -12,7 +12,7 @@ export const checkLimpieza = async (req, res) => {
 
 export const confirmarLimpieza = async (req, res) => {
   try {
-    await conexion.query('UPDATE camas SET estado = ? WHERE estado = ?', ['libre', 'higienizando']);
+    await sequelize.query('UPDATE camas SET estado = ? WHERE estado = ?', ['libre', 'higienizando']);
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: error.message });

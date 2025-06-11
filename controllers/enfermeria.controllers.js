@@ -1,4 +1,4 @@
-import { conexion } from "../config/db.js";
+import sequelize from '../config/db.js';
 
 export const guardarEvaluacion = async (req, res) => {
   const {
@@ -40,42 +40,42 @@ export const guardarEvaluacion = async (req, res) => {
   }
 
   try {
-    const [evaluacion] = await conexion.execute(`
+    const [evaluacion] = await sequelize.execute(`
       INSERT INTO evaluaciones_enfermeria (dni_paciente, dni_medico)
       VALUES (?, ?)`,
       [dni_paciente, dni_medico]
     );
     const evaluacionId = evaluacion.insertId;
 
-    await conexion.execute(`
+    await sequelize.execute(`
       INSERT INTO historial_medico
       (evaluacion_id, enfermedades_previas, cirugias_previas, alergias, medicamentos_actuales, antecedentes_familiares)
       VALUES (?, ?, ?, ?, ?, ?)`,
       [evaluacionId, enfermedades_previas, cirugias_previas, alergias, medicamentos_actuales, antecedentes_familiares]
     );
 
-    await conexion.execute(`
+    await sequelize.execute(`
       INSERT INTO motivo_internacion
       (evaluacion_id, motivo, sintomas)
       VALUES (?, ?, ?)`,
       [evaluacionId, motivo, sintomas]
     );
 
-    await conexion.execute(`
+    await sequelize.execute(`
       INSERT INTO signos_vitales
       (evaluacion_id, presion_arterial, frecuencia_cardiaca, frecuencia_respiratoria, temperatura, observaciones)
       VALUES (?, ?, ?, ?, ?, ?)`,
       [evaluacionId, presion_arterial, frecuencia_cardiaca, frecuencia_respiratoria, temperatura, observaciones_generales]
     );
 
-    await conexion.execute(`
+    await sequelize.execute(`
       INSERT INTO observaciones_generales
       (evaluacion_id, observaciones)
       VALUES (?, ?)`,
       [evaluacionId, observaciones]
     );
 
-    await conexion.execute(`
+    await sequelize.execute(`
       INSERT INTO plan_cuidados
       (evaluacion_id, intervenciones, medicamentos, comunicacion)
       VALUES (?, ?, ?, ?)`,

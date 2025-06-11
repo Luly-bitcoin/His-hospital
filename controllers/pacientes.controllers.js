@@ -1,8 +1,8 @@
-import { conexion } from "../config/db.js";
+import sequelize from '../config/db.js';
 
 export const listar = async (req, res) => {
   try {
-    const [rows] = await conexion.execute('SELECT * FROM pacientes');
+    const [rows] = await sequelize.execute('SELECT * FROM pacientes');
     res.render('pacientes/lista', { pacientes: rows });
   } catch (error) {
     console.error(error);
@@ -15,7 +15,7 @@ export const verificarDNI = async (req, res) => {
     const dni = req.params.dni;
     console.log("DNI recibido para verificar:", dni); 
     
-    const [results] = await conexion.execute(
+    const [results] = await sequelize.execute(
       'SELECT * FROM pacientes WHERE dni = ?', 
       [dni]
     );
@@ -53,7 +53,7 @@ export const agregarPaciente = async (req, res) => {
       (dni, nombre_completo, fecha_nacimiento, direccion, contacto_emergencia, sexo, derivado, telefono, localidad, obra_social) 
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
-    await conexion.execute(sql, [
+    await sequelize.execute(sql, [
       dni, nombre, fecha, direcc, contacto, sexoFormateado, derivado ? 1 : 0, telefono, localidad, obraSocial
     ]);
 
@@ -66,7 +66,7 @@ export const agregarPaciente = async (req, res) => {
 
 export const listarPacientes = async (req, res) => {
   try {
-    const [pacientes] = await conexion.execute(
+    const [pacientes] = await sequelize.execute(
       'SELECT dni, nombre_completo FROM pacientes'
     );
     res.status(200).json(pacientes);
@@ -78,7 +78,7 @@ export const listarPacientes = async (req, res) => {
 
 export async function obtenerPacientesDisponibles() {
   try {
-    const [pacientes] = await conexion.execute(`
+    const [pacientes] = await sequelize.execute(`
       SELECT dni, nombre_completo 
       FROM pacientes 
       WHERE dni NOT IN (
@@ -94,7 +94,7 @@ export async function obtenerPacientesDisponibles() {
 
 export const obtenerPacientesInternados = async (req, res) => {
   try {
-    const [pacientes] = await conexion.execute(`
+    const [pacientes] = await sequelize.execute(`
       SELECT p.nombre_completo, i.dni_pacientes AS dni, i.cama_id, i.fecha_asignacion
       FROM internaciones i
       JOIN pacientes p ON p.dni = i.dni_pacientes

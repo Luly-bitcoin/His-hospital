@@ -1,8 +1,8 @@
-require ('./models/sync');
-require('dotenv').config();
-import express from 'express';
-const router = express.Router();
+import './models/sync.js';
 import dotenv from 'dotenv';
+import express from 'express';
+import sequelize from './config/db.js';
+const router = express.Router();
 import {obtenerAlasConHabitacionesYCamas} from './models/camas.js';
 import { obtenerHabitacionesPorAla, obtenerCamasPorHabitacion } from './controllers/habitaciones.controllers.js';
 dotenv.config();
@@ -144,7 +144,7 @@ apiRouter.get('/camas/:habitacionId', async (req, res) => {
 
 app.get('/api/camas/emergencias-disponibles', async (req, res) => {
   try {
-    const [camas] = await conexion.query(`
+    const [camas] = await sequelize.query(`
       SELECT c.id AS id, a.nombre AS alas
       FROM camas c
       JOIN habitaciones h ON c.habitacion_id = h.id
@@ -161,11 +161,11 @@ app.get('/api/camas/emergencias-disponibles', async (req, res) => {
 
 app.use('/api', apiRouter);
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3000;
 sequelize.sync({ alter: true})
   .then(() =>{
     console.log('Modelos sincronizados');
-    app.listen(PORT, ' ', () =>{
+    app.listen(PORT, () =>{
       console.log(`servidor iniciando en http://localhost:${PORT}`);
     });
   })

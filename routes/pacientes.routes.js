@@ -1,4 +1,4 @@
-import {conexion} from "../config/db.js";
+import sequelize from '../config/db.js';
 import express from "express";
 import {
   verificarDNI,
@@ -34,7 +34,7 @@ router.get('/disponibles', async (req, res) => {
 //router.get("/:dni", async (req, res) => {
 //  const dni = req.params.dni;
 //  try {
-//    const [rows] = await conexion.execute(
+//    const [rows] = await sequelize.execute(
 //      `SELECT dni, nombre, obra_social, telefono_contacto FROM pacientes WHERE dni = ?`,
 //      [dni]
 //    );
@@ -53,7 +53,7 @@ export const mostrarAsignarCama = async (req, res) => {
     const dniPaciente = req.params.dni; // lo recibes por URL o query param
 
     // Traer paciente por DNI
-    const [pacientes] = await conexion.execute(
+    const [pacientes] = await sequelize.execute(
       'SELECT dni, nombre_completo AS nombre, sexo FROM pacientes WHERE dni = ?',
       [dniPaciente]
     );
@@ -63,7 +63,7 @@ export const mostrarAsignarCama = async (req, res) => {
     }
 
     // Traer alas
-    const [alas] = await conexion.execute('SELECT id, nombre FROM alas');
+    const [alas] = await sequelize.execute('SELECT id, nombre FROM alas');
 
     res.render('internaciones/asignar-cama', {
       nombre: pacientes[0].nombre,
@@ -82,7 +82,7 @@ export const mostrarAsignarCama = async (req, res) => {
 router.get('/:dni', async (req, res) => {
   const dni = req.params.dni;
   try {
-    const [rows] = await conexion.execute('SELECT dni, nombre_completo, obra_social, telefono FROM pacientes WHERE dni = ?', [dni]);
+    const [rows] = await sequelize.execute('SELECT dni, nombre_completo, obra_social, telefono FROM pacientes WHERE dni = ?', [dni]);
     if (rows.length === 0) return res.status(404).json({ message: 'Paciente no encontrado' });
     res.json(rows[0]);
   } catch (error) {

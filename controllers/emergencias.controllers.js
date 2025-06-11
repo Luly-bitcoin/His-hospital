@@ -1,4 +1,4 @@
-import {conexion} from '../config/db.js'; 
+import sequelize from '../config/db.js';
 
 const emergenciasController = {
   getIngresoEmergencia: (req, res) => {
@@ -9,7 +9,7 @@ const emergenciasController = {
 
   getCamasEmergencias: async (req, res) => {
     try {
-      const [camas] = await conexion.query(`
+      const [camas] = await sequelize.query(`
         SELECT c.id
         FROM camas c
         JOIN habitaciones h ON c.habitacion_id = h.id
@@ -37,13 +37,13 @@ const emergenciasController = {
     const fecha_ingreso = new Date(hora).toISOString().slice(0, 19).replace('T', ' ');
     console.log('Fecha ingreso formateada:', fecha_ingreso);
 
-    const [result] = await conexion.query(
+    const [result] = await sequelize.query(
       `INSERT INTO emergencias (dni_falso, id_cama, fecha_ingreso, sexo, observacion) VALUES (?, ?, ?, ?, ?)`,
       [dni, cama_id, fecha_ingreso, sexo, observacion]
     );
     console.log('Resultado inserción emergencias:', result);
 
-    const [updateResult] = await conexion.query(`UPDATE camas SET estado = 'ocupada' WHERE id = ?`, [cama_id]);
+    const [updateResult] = await sequelize.query(`UPDATE camas SET estado = 'ocupada' WHERE id = ?`, [cama_id]);
     console.log('Resultado actualización cama:', updateResult);
 
     res.json({ message: 'Emergencia registrada correctamente' });

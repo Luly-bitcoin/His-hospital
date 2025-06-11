@@ -1,5 +1,5 @@
 import express from 'express';
-import { conexion } from '../config/db.js'; 
+import sequelize from '../config/db.js';
 import {permitirRoles, checkRole} from '../middlewares/auth.middleware.js';
 import medicosControllers from '../controllers/medicos.controllers.js';
 
@@ -18,7 +18,7 @@ router.get("/editar/:dni", (req, res) => res.render("medicos/editar-medico"));
 // Obtener médicos en formato JSON
 router.get("/medicos-json", async (req, res) => {
   try {
-    const [medicos] = await conexion.execute(`
+    const [medicos] = await sequelize.execute(`
       SELECT dni, nombre, correo, sexo, matricula, especialidad
       FROM medicos
       WHERE estado = 1
@@ -34,7 +34,7 @@ router.get("/medicos-json", async (req, res) => {
 router.get("/api/medicos/:dni", async (req, res) => {
   const dni = req.params.dni;
   try {
-    const [rows] = await conexion.execute(`
+    const [rows] = await sequelize.execute(`
       SELECT dni, nombre, correo, sexo, matricula, especialidad
       FROM medicos
       WHERE dni = ? AND estado = 1
@@ -57,7 +57,7 @@ router.put("/api/medicos/:dni", async (req, res) => {
   const { nombre, correo, sexo, matricula, especialidad } = req.body;
 
   try {
-    const [resultado] = await conexion.execute(`
+    const [resultado] = await sequelize.execute(`
       UPDATE medicos
       SET nombre = ?, correo = ?, sexo = ?, matricula = ?, especialidad = ?
       WHERE dni = ? AND estado = 1
@@ -78,7 +78,7 @@ router.get("/:dni", async (req, res) => {
   const dni = req.params.dni;
   console.log("Buscando medico con dni: ", dni);
   try {
-    const [rows] = await conexion.execute(`
+    const [rows] = await sequelize.execute(`
       SELECT dni, nombre, correo, sexo, matricula, especialidad
       FROM medicos
       WHERE dni = ? 

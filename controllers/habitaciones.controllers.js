@@ -1,7 +1,7 @@
-import { conexion as pool } from '../config/db.js';
+import sequelize from '../config/db.js';
 
 export async function obtenerHabitacionesPorAla(alaId) {
-  const [habitaciones] = await pool.query(
+  const [habitaciones] = await sequelize.query(
     'SELECT id, capacidad FROM habitaciones WHERE ala_id = ? ORDER BY id',
     [alaId]
   );
@@ -9,7 +9,7 @@ export async function obtenerHabitacionesPorAla(alaId) {
 }
 
 export async function obtenerCamasPorHabitacion(habitacionId) {
-  const [camas] = await pool.query(`
+  const [camas] = await sequelize.query(`
     SELECT 
       c.id, c.estado,
       CASE

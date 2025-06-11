@@ -1,11 +1,11 @@
-import { conexion as pool } from '../config/db.js';
+import sequelize from '../config/db.js';
 
 export async function obtenerAlasConHabitacionesYCamas() {
-  const [alas] = await pool.query('SELECT id, nombre FROM alas ORDER BY nombre');
+  const [alas] = await sequelize.query('SELECT id, nombre FROM alas ORDER BY nombre');
   console.log('Alas:', alas);
 
   for (const ala of alas) {
-    const [habitaciones] = await pool.query(
+    const [habitaciones] = await sequelize.query(
       'SELECT id, capacidad FROM habitaciones WHERE ala_id = ? ORDER BY id',
       [ala.id]
     );
@@ -13,7 +13,7 @@ export async function obtenerAlasConHabitacionesYCamas() {
     console.log(`Habitaciones para ala ${ala.id}:`, habitaciones);
 
     for (const hab of habitaciones) {
-      const [camas] = await pool.query(`
+      const [camas] = await sequelize.query(`
         SELECT 
           c.id,
           CASE

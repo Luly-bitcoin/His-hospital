@@ -1,7 +1,7 @@
-import {conexion} from '../config/conexion.js';
+import sequelize from '../config/db.js';
 
 async function crearNotificacion(mensaje, id_cama, de_usuario, para_usuario) {
-  const [result] = await conexion.execute(
+  const [result] = await sequelize.execute(
     `INSERT INTO notificaciones (mensaje, estado, id_cama, de_usuario, para_usuario, fecha_creacion)
      VALUES (?, 'pendiente', ?, ?, ?, NOW())`,
     [mensaje, id_cama, de_usuario, para_usuario]
@@ -11,7 +11,7 @@ async function crearNotificacion(mensaje, id_cama, de_usuario, para_usuario) {
 
 // Listar notificaciones para un usuario
 async function listarNotificaciones(usuario) {
-  const [rows] = await conexion.execute(
+  const [rows] = await sequelize.execute(
     `SELECT * FROM notificaciones WHERE para_usuario = ? AND estado = 'pendiente' ORDER BY fecha_creacion DESC`,
     [usuario]
   );
@@ -20,14 +20,14 @@ async function listarNotificaciones(usuario) {
 
 // Actualizar notificación (ej. marcar como completada y agregar respuesta)
 async function responderNotificacion(id, respuesta) {
-  const [result] = await conexion.execute(
+  const [result] = await sequelize.execute(
     `UPDATE notificaciones SET estado = 'completada', respuesta = ?, fecha_respuesta = NOW() WHERE id = ?`,
     [respuesta, id]
   );
   return result.affectedRows;
 }
 
-module.exports = {
+export default {
   crearNotificacion,
   listarNotificaciones,
   responderNotificacion

@@ -1,6 +1,6 @@
 import express from 'express';
 export const router = express.Router();
-import {conexion} from '../config/db.js';
+import sequelize from '../config/db.js';
 
 
 router.get('/api/habitaciones', async (req, res) => {
@@ -11,7 +11,7 @@ router.get('/api/habitaciones', async (req, res) => {
   }
 
   try {
-    const [habitaciones] = await conexion.execute(
+    const [habitaciones] = await sequelize.execute(
       'SELECT id, CONCAT("Habitación ", id) AS nombre FROM habitaciones WHERE ala_id = ?',
       [alaId]
     );

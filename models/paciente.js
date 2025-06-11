@@ -1,8 +1,8 @@
-import { conexion } from '../config/db.js';
+import sequelize from '../config/db.js';
 
 export async function obtenerPacientesDisponibles() {
   try {
-    const [rows] = await conexion.query(
+    const [rows] = await sequelize.query(
       `SELECT dni, nombre_completo 
        FROM pacientes 
        WHERE dni NOT IN (
